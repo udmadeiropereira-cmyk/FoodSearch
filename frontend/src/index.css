@@ -1,0 +1,448 @@
+:root {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  color: #222;
+  background-color: #f5f5f5;
+}
+
+body {
+  margin: 0;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* ===== LAYOUT GERAL ===== */
+
+.page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.content {
+  padding: 1.5rem 3rem;
+}
+
+.page-title {
+  margin-top: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+/* ===== TOPBAR ===== */
+
+.topbar {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 2rem;
+  background-color: #ff7a1a;
+  color: #fff;
+  justify-content: space-between;
+  gap: 1.5rem;
+}
+
+.topbar-left,
+.topbar-center,
+.topbar-right {
+  display: flex;
+  align-items: center;
+}
+
+.logo {
+  font-weight: 800;
+  font-size: 1.3rem;
+  letter-spacing: 1px;
+}
+
+.logo span {
+  font-weight: 400;
+}
+
+.topbar-center {
+  flex: 1;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.5rem;
+}
+
+.search-input {
+  padding: 0.4rem 0.75rem;
+  border-radius: 6px;
+  border: none;
+  outline: none;
+}
+
+/* se você estiver usando botões de categoria em linha */
+.category-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.category-button {
+  padding: 0.3rem 0.75rem;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+  background-color: rgba(255, 255, 255, 0.2);
+  color: #fff;
+  font-size: 0.85rem;
+}
+
+.category-button:hover {
+  background-color: rgba(255, 255, 255, 0.35);
+}
+
+.cart-button,
+.cart-icon {
+  position: relative;
+  font-size: 1.5rem;
+}
+
+.cart-count {
+  position: absolute;
+  top: -0.4rem;
+  right: -0.6rem;
+  background-color: #222;
+  color: #fff;
+  border-radius: 999px;
+  padding: 0 0.35rem;
+  font-size: 0.75rem;
+}
+
+/* ===== GRID DE PRODUTOS ===== */
+
+.products-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1.25rem;
+}
+
+.product-card {
+  background-color: #fff;
+  border-radius: 10px;
+  padding: 0.75rem;
+  box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.product-image {
+  width: 100%;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.product-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.product-name {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.product-price {
+  font-weight: 700;
+  color: #ff7a1a;
+}
+
+.product-actions {
+  margin-top: 0.5rem;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.see-more-button,
+.btn-secondary,
+.btn-primary {
+  padding: 0.3rem 0.7rem;
+  border-radius: 6px;
+  border: none;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+/* ===== BOTÕES GENÉRICOS (LISTAS, CARRINHO ETC.) ===== */
+
+.primary-button {
+  background-color: #ff7a1a;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 0.45rem 0.9rem;
+  cursor: pointer;
+}
+
+.secondary-button {
+  background-color: #fff;
+  color: #ff7a1a;
+  border: 1px solid #ff7a1a;
+  border-radius: 6px;
+  padding: 0.45rem 0.9rem;
+  cursor: pointer;
+}
+
+.danger-button {
+  background-color: #ff3b3b;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 0.3rem 0.7rem;
+  cursor: pointer;
+}
+
+/* ===== CARRINHO ===== */
+
+.cart-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: #fff;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.cart-table th,
+.cart-table td {
+  padding: 0.6rem 0.8rem;
+  border-bottom: 1px solid #eee;
+  text-align: left;
+}
+
+.cart-table th {
+  background-color: #fafafa;
+}
+
+.cart-summary {
+  margin-top: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.cart-total {
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+/* ===================================================================
+   PÁGINA DE DETALHE DO PRODUTO (NOVA E ORGANIZADA)
+   =================================================================== */
+
+.product-detail-page {
+  padding: 32px 40px 48px;
+  background: #fafafa;
+  min-height: 100vh;
+}
+
+.product-detail-layout {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  gap: 40px;
+}
+
+/* coluna esquerda: imagem + tabela nutricional */
+.product-detail-left {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.product-detail-image-wrapper {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 32px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.product-detail-image {
+  max-width: 100%;
+  max-height: 480px;
+  object-fit: contain;
+}
+
+/* tabela nutricional embaixo da imagem */
+.nutrition-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 20px 24px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+
+.nutrition-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.nutrition-sub {
+  font-weight: 400;
+  font-size: 14px;
+  color: #777;
+}
+
+.nutrition-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.nutrition-table td {
+  padding: 8px 6px;
+  border-top: 1px solid #eee;
+}
+
+/* coluna direita: informações + ingredientes + ações */
+
+.product-detail-right {
+  flex: 1.2;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.product-detail-title {
+  font-size: 26px;
+  font-weight: 700;
+  margin: 0 0 4px;
+}
+
+.product-detail-category {
+  font-size: 14px;
+  color: #777;
+}
+
+.product-detail-category span {
+  font-weight: 600;
+}
+
+.product-detail-price {
+  font-size: 22px;
+  font-weight: 700;
+  color: #ff8a00;
+  margin-top: 8px;
+}
+
+.product-detail-description {
+  margin-top: 8px;
+  line-height: 1.5;
+}
+
+/* ingredientes como parágrafo simples */
+.product-detail-ingredients h3 {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.product-detail-ingredients p {
+  line-height: 1.5;
+}
+
+/* quantidade + botões alinhados como no print (um embaixo do outro) */
+
+.product-detail-actions {
+  margin-top: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
+}
+.quantity-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.quantity-row label {
+  font-size: 14px;
+}
+.qty-label {
+  font-size: 14px;
+  align-self: flex-start;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.quantity-input {
+  width: 80px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  font-size: 14px;
+}
+/* ===== BOTÕES GRANDES DO DETALHE (VOLTA + ADICIONAR) ===== */
+
+.btn-large {
+  padding: 10px 18px;
+  font-size: 14px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+/* VOLTAR – laranja claro */
+.btn-outline-orange {
+  background: #fff7eb;
+  border: 1px solid #ff8a00;
+  color: #ff8a00;
+}
+
+.btn-outline-orange:hover {
+  background: #ffe0b8;
+}
+
+/* ADICIONAR – laranja cheio */
+.btn-solid-orange {
+  background: #ff8a00;
+  border: 1px solid #ff8a00;
+  color: #ffffff;
+}
+
+.btn-solid-orange:hover {
+  background: #ff7a00;
+}
+
+/* caixa genérica, se quiser usar em volta de ingredientes/tabela (opcional) */
+.section-box {
+  margin-top: 24px;
+  padding: 16px;
+  background: #fafafa;
+  border-radius: 12px;
+  border: 1px solid #eee;
+}
+
+/* spacer opcional para topbar quando precisar */
+.topbar-spacer {
+  flex: 1;
+}
+.btn-primary {
+  background: #ff7b00;
+  color: white;
+  border: none;
+  font-weight: 600;
+  transition: 0.2s;
+}
+.btn-primary:hover {
+  background: #e86d00;
+}
+.btn-secondary {
+  background: #fff3e6;
+  color: #d86200;
+  border: 1px solid #ffc89c;
+  font-weight: 600;
+}
+
+.btn-secondary:hover {
+  background: #ffe0c2;
+}

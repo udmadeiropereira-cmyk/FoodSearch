@@ -10,11 +10,12 @@ class CategoriaSerializer(serializers.ModelSerializer):
 class ProdutoSerializer(serializers.ModelSerializer):
     # Mostra o nome da categoria em vez de apenas o ID
     categoria_nome = serializers.CharField(source='categoria.nome', read_only=True)
-    
+    ingredientes_nomes = serializers.SerializerMethodField()
     class Meta:
         model = Produto
         fields = '__all__'
-
+    def get_ingredientes_nomes(self, obj):
+        return [ing.nome for ing in obj.ingredientes.all()]
 class ItemPedidoSerializer(serializers.ModelSerializer):
     produto_nome = serializers.CharField(source='produto.nome', read_only=True)
     
