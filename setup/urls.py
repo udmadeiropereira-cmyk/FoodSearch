@@ -6,7 +6,7 @@ from django.conf.urls.static import static
 from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
-from core.views import ProdutoViewSet, PedidoViewSet
+from core.views import ProdutoViewSet, PedidoViewSet, RegisterView
 
 router = DefaultRouter()
 router.register(r'produtos', ProdutoViewSet, basename='produto')
@@ -20,6 +20,7 @@ urlpatterns = [
     path('api/', include(router.urls)),               # /api/produtos/, /api/pedidos/
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('api/register/', RegisterView.as_view(), name='auth_register'),
 ]
 
 # Arquivos de mídia (imagens dos produtos)

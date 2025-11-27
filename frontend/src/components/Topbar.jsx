@@ -1,6 +1,8 @@
 // src/components/Topbar.jsx
+import { useContext } from "react"; // <--- Adicionado
 import { Link } from "react-router-dom";
 import { useCart } from "../context/CartContext.jsx";
+import AuthContext from '../context/AuthContext'; // <--- Já estava aqui, perfeito
 import "../index.css";
 
 export default function Topbar({
@@ -9,6 +11,9 @@ export default function Topbar({
   onCategoryChange,
 }) {
   const { totalItems } = useCart();
+  
+  // Pega os dados do usuário e a função de logout do contexto
+  const { user, logoutUser } = useContext(AuthContext);
 
   const categories = [
     "Frutas",
@@ -49,6 +54,42 @@ export default function Topbar({
       </div>
 
       <div className="topbar-right">
+        
+        {/* --- INÍCIO DA LÓGICA DE LOGIN --- */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginRight: '20px', color: 'white' }}>
+          {user ? (
+            // Se estiver logado
+            <>
+              <span style={{ fontWeight: 'bold' }}>Olá, {user.username}</span>
+              <button 
+                onClick={logoutUser} 
+                style={{ 
+                  background: 'transparent', 
+                  border: '1px solid white', 
+                  color: 'white', 
+                  padding: '4px 10px', 
+                  borderRadius: '4px', 
+                  cursor: 'pointer',
+                  fontSize: '0.9rem'
+                }}
+              >
+                Sair
+              </button>
+            </>
+          ) : (
+            // Se NÃO estiver logado
+            <>
+              <Link to="/login" style={{ color: 'white', textDecoration: 'none', fontWeight: 'bold' }}>
+                Entrar
+              </Link>
+              <Link to="/register" style={{ color: 'white', textDecoration: 'none' }}>
+                Cadastrar
+              </Link>
+            </>
+          )}
+        </div>
+        {/* --- FIM DA LÓGICA DE LOGIN --- */}
+
         <Link to="/carrinho" className="cart-button">
           🛒
           <span className="cart-count">{totalItems}</span>

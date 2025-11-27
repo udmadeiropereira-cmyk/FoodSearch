@@ -1,12 +1,13 @@
-from rest_framework import viewsets, status, filters
+from rest_framework import viewsets, status, filters, generics
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated, AllowAny
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Q
 import django_filters
+from django.contrib.auth.models import User
 
 from .models import Produto, Pedido, ItemPedido, Categoria, Alergenico, Ingrediente
-from .serializers import ProdutoSerializer, PedidoSerializer, CategoriaSerializer
+from .serializers import ProdutoSerializer, PedidoSerializer, CategoriaSerializer, UserSerializer
 
 # --- Filtro Super Poderoso do FoodSearch ---
 class ProdutoFilter(django_filters.FilterSet):
@@ -92,3 +93,8 @@ class PedidoViewSet(viewsets.ModelViewSet):
             
         serializer = self.get_serializer(pedido)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+    
+class RegisterView(generics.CreateAPIView):
+    queryset = User.objects.all()
+    permission_classes = (AllowAny,)
+    serializer_class = UserSerializer
