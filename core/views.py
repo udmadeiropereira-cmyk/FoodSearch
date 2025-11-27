@@ -1,45 +1,36 @@
 from rest_framework import viewsets, status, filters, generics
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated, AllowAny
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated, IsAdminUser, AllowAny
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Q
 import django_filters
 from django.contrib.auth.models import User
+from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework_simplejwt.views import TokenObtainPairView
 
 from .models import Produto, Pedido, ItemPedido, Categoria, Alergenico, Ingrediente
-from .serializers import ProdutoSerializer, PedidoSerializer, CategoriaSerializer, UserSerializer
+# MUDANÇA 1: Importando RegisterSerializer em vez de UserSerializer
+from .serializers import ProdutoSerializer, PedidoSerializer, CategoriaSerializer, RegisterSerializer, MyTokenObtainPairSerializer
 
-# --- Filtro Super Poderoso do FoodSearch ---
+# --- Filtro Super Poderoso do FoodSearch (Sem alterações, está ótimo) ---
 class ProdutoFilter(django_filters.FilterSet):
-    # 1. Busca textual básica
     nome = django_filters.CharFilter(field_name="nome", lookup_expr='icontains')
-    
-    # 2. Categoria
     categoria = django_filters.ModelChoiceFilter(queryset=Categoria.objects.all())
-
-    # 3. Restrição de Ingredientes (Excluir produtos que contenham X)
-    # Ex: ?excluir_ingrediente=cebola
     excluir_ingrediente = django_filters.CharFilter(method='filter_excluir_ingrediente')
 
-    # 4. Alergias e Contaminação Cruzada
-    # Recebe IDs dos alergênicos para EXCLUIR. Ex: ?excluir_alergenicos=1,2
     excluir_alergenicos = django_filters.ModelMultipleChoiceFilter(
         field_name='alergenicos',
         queryset=Alergenico.objects.all(),
-        exclude=True, # A mágica: exclui quem TEM a alergia
+        exclude=True, 
     )
-    # Se true, filtra também o texto de contaminação cruzada
     sem_contaminacao = django_filters.BooleanFilter(method='filter_sem_contaminacao')
 
-    # 5. Limites Nutricionais (Quantidade por porção)
     max_calorias = django_filters.NumberFilter(field_name="calorias", lookup_expr='lte')
     max_carboidratos = django_filters.NumberFilter(field_name="carboidratos", lookup_expr='lte')
     max_gorduras = django_filters.NumberFilter(field_name="gorduras_totais", lookup_expr='lte')
     max_sodio = django_filters.NumberFilter(field_name="sodio", lookup_expr='lte')
     max_acucar = django_filters.NumberFilter(field_name="acucar_adicionado", lookup_expr='lte')
 
-    # 6. Bloquear Alto Teor (Usando os campos booleanos que criamos)
-    # Se o usuário marcar "Bloquear Alto Açúcar", passamos true, e o sistema exclui quem é true.
     bloquear_alto_acucar = django_filters.BooleanFilter(field_name='alto_teor_acucar', exclude=True)
     bloquear_alto_sodio = django_filters.BooleanFilter(field_name='alto_teor_sodio', exclude=True)
     bloquear_alto_gordura = django_filters.BooleanFilter(field_name='alto_teor_gordura_sat', exclude=True)
@@ -49,12 +40,10 @@ class ProdutoFilter(django_filters.FilterSet):
         fields = ['categoria', 'nome']
 
     def filter_excluir_ingrediente(self, queryset, name, value):
-        # Exclui produtos que tenham ingredientes com esse nome (parcial)
         return queryset.exclude(ingredientes__nome__icontains=value)
 
     def filter_sem_contaminacao(self, queryset, name, value):
         if value:
-            # Exclui produtos que tenham QUALQUER aviso de contaminação
             return queryset.filter(contaminacao_cruzada__exact='')
         return queryset
 
@@ -97,4 +86,19 @@ class PedidoViewSet(viewsets.ModelViewSet):
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
     permission_classes = (AllowAny,)
-    serializer_class = UserSerializer
+    # MUDANÇA 2: Usando o nome correto do Serializer que renomeamos no outro arquivo
+    serializer_class = RegisterSerializer
+
+class ProdutoAdminViewSet(viewsets.ModelViewSet):
+    queryset = Produto.objects.all()
+    serializer_class = ProdutoSerializer
+    
+    # 1. Segurança: Apenas admins podem criar/editar/deletar
+    permission_classes = [IsAdminUser]
+    
+    # 2. Upload: Necessário para processar imagens + dados de texto
+    parser_classes = [MultiPartParser, FormParser]
+
+# MUDANÇA 3: Adicionando a View de Token Customizada (Admin)
+class MyTokenObtainPairView(TokenObtainPairView):
+    serializer_class = MyTokenObtainPairSerializer

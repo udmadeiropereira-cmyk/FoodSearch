@@ -1,8 +1,8 @@
 // src/components/Topbar.jsx
-import { useContext } from "react"; // <--- Adicionado
+import { useContext } from "react"; 
 import { Link } from "react-router-dom";
 import { useCart } from "../context/CartContext.jsx";
-import AuthContext from '../context/AuthContext'; // <--- Já estava aqui, perfeito
+import AuthContext from '../context/AuthContext'; 
 import "../index.css";
 
 export default function Topbar({
@@ -11,15 +11,10 @@ export default function Topbar({
   onCategoryChange,
 }) {
   const { totalItems } = useCart();
-  
-  // Pega os dados do usuário e a função de logout do contexto
   const { user, logoutUser } = useContext(AuthContext);
 
   const categories = [
-    "Frutas",
-    "Verduras & Legumes",
-    "Grãos & Cereais",
-    "Industrializados",
+    "Frutas", "Verduras & Legumes", "Grãos & Cereais", "Industrializados",
   ];
 
   return (
@@ -60,6 +55,25 @@ export default function Topbar({
           {user ? (
             // Se estiver logado
             <>
+              {/* --- NOVO BOTÃO DE ADMIN --- */}
+              {user.is_staff && (
+                <Link 
+                  to="/admin/novo-produto"
+                  style={{
+                    backgroundColor: '#ff4444', // Vermelho para destacar
+                    color: 'white',
+                    padding: '4px 8px',
+                    borderRadius: '4px',
+                    textDecoration: 'none',
+                    fontWeight: 'bold',
+                    fontSize: '0.9rem'
+                  }}
+                >
+                  + Novo Produto
+                </Link>
+              )}
+              {/* --------------------------- */}
+
               <span style={{ fontWeight: 'bold' }}>Olá, {user.username}</span>
               <button 
                 onClick={logoutUser} 

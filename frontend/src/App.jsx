@@ -10,6 +10,7 @@ import Cart from "./pages/Cart.jsx";
 import Topbar from "./components/Topbar.jsx";
 import Login from './pages/Login';
 import Register from './pages/Register';
+import CadastroProduto from "./pages/CadastroProduto.jsx";
 
 function App() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -37,6 +38,7 @@ function App() {
               <Route path="/carrinho" element={<Cart />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} /> 
+              <Route path="/admin/novo-produto" element={<CadastroProduto />} />
             </Routes>
           </main>
         </div>
