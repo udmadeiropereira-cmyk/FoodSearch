@@ -8,11 +8,21 @@ const AuthContext = createContext();
 export default AuthContext;
 
 export const AuthProvider = ({ children }) => {
-    let [user, setUser] = useState(() => localStorage.getItem('access_token') ? jwtDecode(localStorage.getItem('access_token')) : null);
-    let [authTokens, setAuthTokens] = useState(() => localStorage.getItem('access_token') ? JSON.parse(localStorage.getItem('access_token')) : null);
+    // 1. Recupera o objeto completo (Access + Refresh) se existir
+    let [authTokens, setAuthTokens] = useState(() => 
+        localStorage.getItem('authTokens') 
+            ? JSON.parse(localStorage.getItem('authTokens')) 
+            : null
+    );
+
+    // 2. Decodifica o usuário a partir do token de acesso salvo
+    let [user, setUser] = useState(() => 
+        localStorage.getItem('authTokens') 
+            ? jwtDecode(localStorage.getItem('authTokens')) 
+            : null
+    );
     
-    // O navigate pode precisar estar dentro do componente que é filho do Router no App.jsx
-    // Se der erro aqui, a lógica de redirecionamento deve ir para a página de Login
+    // O navigate deve ser usado nos componentes, não aqui diretamente, para evitar erros de contexto
     
     let loginUser = async (e) => {
         e.preventDefault();
@@ -22,13 +32,17 @@ export const AuthProvider = ({ children }) => {
                 password: e.target.password.value
             });
             
-            localStorage.setItem('access_token', response.data.access);
-            localStorage.setItem('refresh_token', response.data.refresh);
+            // 3. AQUI ESTAVA O ERRO: Agora salvamos o objeto JSON completo (access e refresh)
+            // Usamos JSON.stringify para transformar o objeto em string
+            localStorage.setItem('authTokens', JSON.stringify(response.data));
             
             setAuthTokens(response.data);
             setUser(jwtDecode(response.data.access));
+            
             alert("Login efetuado!");
+            // Aqui você pode redirecionar usando window.location ou passando navigate via props
         } catch (error) {
+            console.error(error);
             alert("Algo deu errado no login");
         }
     };
@@ -36,12 +50,13 @@ export const AuthProvider = ({ children }) => {
     let logoutUser = () => {
         setAuthTokens(null);
         setUser(null);
-        localStorage.removeItem('access_token');
-        localStorage.removeItem('refresh_token');
+        // 4. Limpa a chave correta
+        localStorage.removeItem('authTokens');
     };
 
     let contextData = {
         user: user,
+        authTokens: authTokens, // Útil expor os tokens caso precise usar em interceptors
         loginUser: loginUser,
         logoutUser: logoutUser,
     };
