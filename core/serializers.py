@@ -10,7 +10,6 @@ class CategoriaSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class ProdutoSerializer(serializers.ModelSerializer):
-    # Mostra o nome da categoria em vez de apenas o ID
     categoria = serializers.SlugRelatedField(
         queryset=Categoria.objects.all(), # Onde buscar o objeto
         slug_field='nome'                # O campo que será usado para a busca/entrada
@@ -51,14 +50,11 @@ class PedidoSerializer(serializers.ModelSerializer):
         model = Pedido
         fields = ['id', 'usuario', 'status', 'data_criacao', 'total', 'itens']
 
-# Serializer simples para criar o item no pedido (Payload do React)
 class CriarItemPedidoSerializer(serializers.ModelSerializer):
     class Meta:
         model = ItemPedido
         fields = ['produto', 'quantidade']
 
-# --- MUDANÇA: Renomeado de UserSerializer para RegisterSerializer ---
-# Isso alinha com o que o views.py está esperando importar
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
 
@@ -74,7 +70,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         )
         return user
 
-# --- JWT Customizado (Correto estar aqui) ---
+
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
     @classmethod
     def get_token(cls, user):
@@ -90,9 +86,9 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
 class IngredienteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Ingrediente
-        fields = ['id', 'nome'] # Use apenas os campos necessários, 'nome' é crucial
+        fields = ['id', 'nome'] 
 
 class AlergenicoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Alergenico
-        fields = ['id', 'nome'] # Use apenas os campos necessários, 'nome' é crucial
+        fields = ['id', 'nome'] 
