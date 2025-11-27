@@ -8,22 +8,37 @@ const AuthContext = createContext();
 export default AuthContext;
 
 export const AuthProvider = ({ children }) => {
-    // 1. Recupera o objeto completo (Access + Refresh) se existir
-    let [authTokens, setAuthTokens] = useState(() => 
-        localStorage.getItem('authTokens') 
-            ? JSON.parse(localStorage.getItem('authTokens')) 
-            : null
-    );
+    
+    // Funções auxiliares para leitura segura do localStorage
+    const getTokens = () => {
+        const tokenString = localStorage.getItem('authTokens');
+        return tokenString ? JSON.parse(tokenString) : null;
+    };
+    
+    const getUserFromToken = (tokens) => {
+        if (!tokens || !tokens.access) return null;
+        try {
+            // Verifica se o token está expirado antes de decodificar
+            const decoded = jwtDecode(tokens.access);
+            if (decoded.exp * 1000 < Date.now()) { // O token expirou
+                return null;
+            }
+            return decoded;
+        } catch (e) {
+            // Token inválido (corrompido ou mal formado)
+            return null;
+        }
+    };
 
-    // 2. Decodifica o usuário a partir do token de acesso salvo
-    let [user, setUser] = useState(() => 
-        localStorage.getItem('authTokens') 
-            ? jwtDecode(localStorage.getItem('authTokens')) 
-            : null
-    );
+    // 1. Inicializa o estado lendo de forma segura
+    let [authTokens, setAuthTokens] = useState(getTokens);
+
+    // 2. Inicializa o usuário lendo o token de acesso
+    let [user, setUser] = useState(() => getUserFromToken(getTokens()));
     
     // O navigate deve ser usado nos componentes, não aqui diretamente, para evitar erros de contexto
     
+    // ... (As funções loginUser e logoutUser permanecem como estão) ...
     let loginUser = async (e) => {
         e.preventDefault();
         try {
@@ -32,15 +47,12 @@ export const AuthProvider = ({ children }) => {
                 password: e.target.password.value
             });
             
-            // 3. AQUI ESTAVA O ERRO: Agora salvamos o objeto JSON completo (access e refresh)
-            // Usamos JSON.stringify para transformar o objeto em string
             localStorage.setItem('authTokens', JSON.stringify(response.data));
             
             setAuthTokens(response.data);
-            setUser(jwtDecode(response.data.access));
+            setUser(jwtDecode(response.data.access)); // Aqui usa o token válido
             
             alert("Login efetuado!");
-            // Aqui você pode redirecionar usando window.location ou passando navigate via props
         } catch (error) {
             console.error(error);
             alert("Algo deu errado no login");
@@ -50,13 +62,26 @@ export const AuthProvider = ({ children }) => {
     let logoutUser = () => {
         setAuthTokens(null);
         setUser(null);
-        // 4. Limpa a chave correta
         localStorage.removeItem('authTokens');
     };
+    
+    // 3. EFEITO DE MONITORAMENTO (Opcional, mas ajuda a manter a validade do token)
+    // Este useEffect faria a tentativa de refresh do token. Por hora, vamos deixá-lo simples:
+    
+    useEffect(() => {
+        // Se a página for carregada e o token estiver expirado, limpamos tudo.
+        const tokens = getTokens();
+        if (!getUserFromToken(tokens) && tokens) {
+            console.warn("Token expirado na inicialização. Limpando sessão.");
+            // Força a limpeza para garantir que o usuário precise logar de novo.
+            logoutUser();
+        }
+    }, []); 
 
+    // ... (restante do contextData e return) ...
     let contextData = {
         user: user,
-        authTokens: authTokens, // Útil expor os tokens caso precise usar em interceptors
+        authTokens: authTokens,
         loginUser: loginUser,
         logoutUser: logoutUser,
     };
