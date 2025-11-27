@@ -2,6 +2,7 @@ from rest_framework import serializers
 from .models import Produto, Categoria, Pedido, ItemPedido, Perfil
 from django.contrib.auth.models import User
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from .models import Produto, Categoria, Ingrediente, Alergenico
 
 class CategoriaSerializer(serializers.ModelSerializer):
     class Meta:

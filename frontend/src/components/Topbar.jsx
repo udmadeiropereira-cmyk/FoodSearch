@@ -14,7 +14,7 @@ export default function Topbar({
   const { user, logoutUser } = useContext(AuthContext);
 
   const categories = [
-    "Frutas", "Verduras & Legumes", "Grãos & Cereais", "Industrializados",
+    "Tudo o que você procura em um só lugar!",
   ];
 
   return (
@@ -26,13 +26,6 @@ export default function Topbar({
       </div>
 
       <div className="topbar-center">
-        <input
-          type="text"
-          className="search-input"
-          placeholder="Buscar produto..."
-          value={searchTerm}
-          onChange={(e) => onSearchChange?.(e.target.value)}
-        />
 
         <div className="category-buttons">
           {categories.map((cat) => (

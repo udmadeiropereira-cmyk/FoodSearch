@@ -67,7 +67,7 @@ export default function FilterSidebar({ aoFiltrar }) {
 
         {/* RESTRIÇÕES */}
         <div style={sectionStyle}>
-          <h4 style={{margin: '0 0 10px 0', fontSize: '1rem'}}>🚫 Restrições</h4>
+          <h4 style={{margin: '0 0 10px 0', fontSize: '1rem'}}> Restrições</h4>
           
           <label style={labelStyle}>Ingrediente a Evitar</label>
           <input name="excluir_ingrediente" value={filtros.excluir_ingrediente} onChange={handleChange} style={inputStyle} placeholder="Ex: Cebola" />
@@ -85,7 +85,7 @@ export default function FilterSidebar({ aoFiltrar }) {
 
         {/* LIMITES NUTRICIONAIS */}
         <div style={sectionStyle}>
-          <h4 style={{margin: '0 0 10px 0', fontSize: '1rem'}}>⚖️ Limites (por porção)</h4>
+          <h4 style={{margin: '0 0 10px 0', fontSize: '1rem'}}> Limites (por porção)</h4>
           <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px'}}>
             <div>
                 <label style={{fontSize: '0.8rem'}}>Máx Kcal</label>

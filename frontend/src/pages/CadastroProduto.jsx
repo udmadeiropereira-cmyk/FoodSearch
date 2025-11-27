@@ -7,7 +7,7 @@ const CadastroProduto = () => {
     const { user, authTokens } = useContext(AuthContext); // Apenas para garantir que tem user
     const navigate = useNavigate();
 
-    // Estado inicial espelhando SEU models.py
+    // Estado inicial 
     const [formData, setFormData] = useState({
         // Dados Básicos
         nome: '',
@@ -15,18 +15,18 @@ const CadastroProduto = () => {
         preco: '',
         estoque: '',
         codigo_barras: '',
-        porcao: '100', // Default do seu model
+        porcao: '', // Default 
         categoria: '', // Vai receber o ID
 
-        // Nutricional (Obrigatórios segundo seu Model)
+        // Nutricional (Obrigatórios)
         calorias: '',
         proteinas: '',
         carboidratos: '',
         gorduras_totais: '',
         gorduras_saturadas: '',
-        acucar_adicionado: '0', // Default do model
+        acucar_adicionado: '', 
         sodio: '',
-        fibras: '0', // Default do model
+        fibras: '', 
 
         // Avisos e Booleanos
         contaminacao_cruzada: '',
