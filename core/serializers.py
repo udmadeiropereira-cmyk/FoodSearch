@@ -11,9 +11,22 @@ class CategoriaSerializer(serializers.ModelSerializer):
 
 class ProdutoSerializer(serializers.ModelSerializer):
     # Mostra o nome da categoria em vez de apenas o ID
-    categoria_nome = serializers.CharField(source='categoria.nome', read_only=True)
-    ingredientes_nomes = serializers.SerializerMethodField()
+    categoria = serializers.SlugRelatedField(
+        queryset=Categoria.objects.all(), # Onde buscar o objeto
+        slug_field='nome'                # O campo que será usado para a busca/entrada
+    )
+    ingredientes = serializers.SlugRelatedField(
+        queryset=Ingrediente.objects.all(),
+        slug_field='nome',
+        many=True # Indica que pode haver múltiplos valores
+    )
     
+    alergenicos = serializers.SlugRelatedField(
+        queryset=Alergenico.objects.all(),
+        slug_field='nome',
+        many=True
+    )
+
     class Meta:
         model = Produto
         fields = '__all__'
@@ -73,3 +86,13 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
         token['email'] = user.email
 
         return token
+    
+class IngredienteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Ingrediente
+        fields = ['id', 'nome'] # Use apenas os campos necessários, 'nome' é crucial
+
+class AlergenicoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Alergenico
+        fields = ['id', 'nome'] # Use apenas os campos necessários, 'nome' é crucial

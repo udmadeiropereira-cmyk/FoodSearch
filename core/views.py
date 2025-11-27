@@ -10,7 +10,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 
 from .models import Produto, Pedido, ItemPedido, Categoria, Alergenico, Ingrediente
 # MUDANÇA 1: Importando RegisterSerializer em vez de UserSerializer
-from .serializers import ProdutoSerializer, PedidoSerializer, CategoriaSerializer, RegisterSerializer, MyTokenObtainPairSerializer
+from .serializers import ProdutoSerializer, PedidoSerializer, CategoriaSerializer, RegisterSerializer, MyTokenObtainPairSerializer, AlergenicoSerializer, IngredienteSerializer
 
 # --- Filtro Super Poderoso do FoodSearch (Sem alterações, está ótimo) ---
 class ProdutoFilter(django_filters.FilterSet):
@@ -102,3 +102,15 @@ class ProdutoAdminViewSet(viewsets.ModelViewSet):
 # MUDANÇA 3: Adicionando a View de Token Customizada (Admin)
 class MyTokenObtainPairView(TokenObtainPairView):
     serializer_class = MyTokenObtainPairSerializer
+
+class IngredienteViewSet(viewsets.ReadOnlyModelViewSet):
+    """View para listar Ingredientes (usado para popular o formulário de cadastro de produto)."""
+    queryset = Ingrediente.objects.all()
+    serializer_class = IngredienteSerializer
+    permission_classes = [AllowAny] # Aberta para leitura
+
+class AlergenicoViewSet(viewsets.ReadOnlyModelViewSet):
+    """View para listar Alergênicos (usado para popular o formulário de cadastro de produto)."""
+    queryset = Alergenico.objects.all()
+    serializer_class = AlergenicoSerializer
+    permission_classes = [AllowAny] # Aberta para leitura

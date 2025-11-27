@@ -8,12 +8,14 @@ from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenRefreshView
 
 # 2. IMPORTE A SUA VIEW CUSTOMIZADA DAQUI (MyTokenObtainPairView):
-from core.views import ProdutoViewSet, PedidoViewSet, RegisterView, ProdutoAdminViewSet, MyTokenObtainPairView
+from core.views import ProdutoViewSet, PedidoViewSet, RegisterView, ProdutoAdminViewSet, MyTokenObtainPairView, AlergenicoViewSet, IngredienteViewSet
 
 router = DefaultRouter()
 router.register(r'produtos', ProdutoViewSet, basename='produto')
 router.register(r'pedidos', PedidoViewSet, basename='pedido')
 router.register(r'admin/produtos', ProdutoAdminViewSet, basename='admin-produtos')
+router.register(r'ingredientes', IngredienteViewSet, basename='ingrediente')
+router.register(r'alergenicos', AlergenicoViewSet, basename='alergenico')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
