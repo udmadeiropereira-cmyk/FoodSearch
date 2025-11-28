@@ -48,6 +48,20 @@ export default function Topbar({
           {user ? (
             // Se estiver logado
             <>
+            <Link 
+                  to="/historico"
+                  style={{
+                    backgroundColor: '#ff4444', // Vermelho para destacar
+                    color: 'white',
+                    padding: '4px 8px',
+                    borderRadius: '4px',
+                    textDecoration: 'none',
+                    fontWeight: 'bold',
+                    fontSize: '0.9rem'
+                  }}
+                >
+                  Historico
+                </Link>
               {/* --- NOVO BOTÃO DE ADMIN --- */}
               {user.is_staff && (
                 <Link 
@@ -90,7 +104,7 @@ export default function Topbar({
                 Entrar
               </Link>
               <Link to="/register" style={{ color: 'white', textDecoration: 'none' }}>
-                Cadastrar
+                Cadastro
               </Link>
             </>
           )}
