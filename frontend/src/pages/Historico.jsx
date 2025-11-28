@@ -8,29 +8,38 @@ export default function Historico() {
 
   useEffect(() => {
     async function carregarPedidos() {
+      console.log("➡️ authTokens recebido:", authTokens);
+
       if (!authTokens || !authTokens.access) {
-        console.warn("Nenhum token encontrado");
+        console.warn("❌ Nenhum token encontrado.");
         setCarregando(false);
         return;
       }
 
       try {
+        console.log("➡️ Fazendo requisição com token:", authTokens.access);
+
         const resp = await fetch("http://127.0.0.1:8000/api/pedidos/", {
           headers: {
             Authorization: `Bearer ${authTokens.access}`,
           },
         });
 
+        console.log("➡️ Status da resposta:", resp.status);
+
         if (!resp.ok) {
-          console.error("Erro:", resp.status);
+          const txt = await resp.text();
+          console.error("❌ Erro ao buscar pedidos:", txt);
           setCarregando(false);
           return;
         }
 
         const data = await resp.json();
+        console.log("📦 Dados recebidos do backend:", data);
+
         setPedidos(data);
       } catch (err) {
-        console.error("Erro de rede:", err);
+        console.error("❌ Erro de rede:", err);
       }
 
       setCarregando(false);
@@ -63,17 +72,17 @@ export default function Historico() {
         >
           <h2>Pedido #{pedido.id}</h2>
           <p>Data: {new Date(pedido.data_criacao).toLocaleString()}</p>
-          <p>Status: {pedido.status === "FI" ? "Finalizado" : "Outro"}</p>
-          <p>Total: R$ {pedido.total.toFixed(2).replace(".", ",")}</p>
+          <p>Status: {pedido.status === "FI" ? "Finalizado" : pedido.status}</p>
+          <p>Total: R$ {Number(pedido.total).toFixed(2).replace(".", ",")}</p>
 
           <h3>Itens:</h3>
           <ul>
-            {pedido.itens.map((item, index) => (
+            {pedido.itens?.map((item, index) => (
               <li key={index}>
                 {item.quantidade}x {item.produto_nome} — R${" "}
-                {item.preco_unitario.toFixed(2).replace(".", ",")}
+                {Number(item.preco_unitario).toFixed(2).replace(".", ",")}
               </li>
-            ))}
+            )) || <li>Nenhum item retornado</li>}
           </ul>
         </div>
       ))}

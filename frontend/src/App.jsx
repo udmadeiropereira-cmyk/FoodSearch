@@ -11,6 +11,8 @@ import Topbar from "./components/Topbar.jsx";
 import Login from './pages/Login';
 import Register from './pages/Register';
 import CadastroProduto from "./pages/CadastroProduto.jsx";
+import Historico from "./pages/Historico.jsx";
+
 
 function App() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -39,6 +41,7 @@ function App() {
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} /> 
               <Route path="/admin/novo-produto" element={<CadastroProduto />} />
+              <Route path="/historico" element={<Historico />} />
             </Routes>
           </main>
         </div>

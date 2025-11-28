@@ -1,11 +1,11 @@
 // src/context/AuthContext.jsx
-import { createContext, useState, useEffect, useContext } from 'react';
-import api from '../services/api';
-import { jwtDecode } from 'jwt-decode';
+import { createContext, useState, useEffect, useContext } from "react";
+import api from "../services/api";
+import { jwtDecode } from "jwt-decode";
 
 const AuthContext = createContext();
 
-// Hook para usar o contexto
+// Hook personalizado
 export function useAuth() {
     return useContext(AuthContext);
 }
@@ -13,68 +13,81 @@ export function useAuth() {
 export default AuthContext;
 
 export const AuthProvider = ({ children }) => {
-    
+
+    // --- Helpers para tokens ---
     const getTokens = () => {
-        const tokenString = localStorage.getItem('authTokens');
+        const tokenString = localStorage.getItem("authTokens");
         return tokenString ? JSON.parse(tokenString) : null;
     };
-    
-    const getUserFromToken = (tokens) => {
-        if (!tokens || !tokens.access) return null;
+
+    const decodeTokenIfValid = (tokens) => {
+        if (!tokens?.access) return null;
+
         try {
             const decoded = jwtDecode(tokens.access);
 
+            // Se expirar, devolve null — mas NÃO apaga o token
             if (decoded.exp * 1000 < Date.now()) {
+                console.warn("Token expirado (mas não apagado automaticamente).");
                 return null;
             }
 
             return decoded;
-        } catch (e) {
+        } catch {
             return null;
         }
     };
 
+    // --- Estados globais ---
     const [authTokens, setAuthTokens] = useState(getTokens);
-    const [user, setUser] = useState(() => getUserFromToken(getTokens()));
-    
+    const [user, setUser] = useState(() => decodeTokenIfValid(getTokens()));
+
+    // --- LOGIN ---
     const loginUser = async (e) => {
         e.preventDefault();
+
         try {
-            const response = await api.post('/token/', {
+            const response = await api.post("/token/", {
                 username: e.target.username.value,
-                password: e.target.password.value
+                password: e.target.password.value,
             });
-            
-            localStorage.setItem('authTokens', JSON.stringify(response.data));
-            
+
+            localStorage.setItem("authTokens", JSON.stringify(response.data));
+
             setAuthTokens(response.data);
             setUser(jwtDecode(response.data.access));
-            
+
             alert("Login efetuado!");
         } catch (error) {
             console.error(error);
-            alert("Algo deu errado no login");
+            alert("Erro ao tentar fazer login");
         }
     };
 
+    // --- LOGOUT ---
     const logoutUser = () => {
         setAuthTokens(null);
         setUser(null);
-        localStorage.removeItem('authTokens');
+        localStorage.removeItem("authTokens");
     };
-    
+
+    // --- Verifica token ao iniciar (mas NÃO apaga automaticamente) ---
     useEffect(() => {
         const tokens = getTokens();
-        if (!getUserFromToken(tokens) && tokens) {
-            console.warn("Token expirado na inicialização. Limpando sessão.");
-            logoutUser();
-        }
-    }, []); 
+        const decoded = decodeTokenIfValid(tokens);
 
-    let contextData = {
+        if (!decoded && tokens) {
+            console.warn("Token pode estar expirado. Usuário precisará logar depois.");
+        }
+
+        setUser(decoded);
+    }, []);
+
+    // --- Valores expostos no contexto ---
+    const contextData = {
         user,
         authTokens,
-        accessToken: authTokens?.access,  // <- token certo p/ usar no Cart
+        accessToken: authTokens?.access,
         loginUser,
         logoutUser,
     };
