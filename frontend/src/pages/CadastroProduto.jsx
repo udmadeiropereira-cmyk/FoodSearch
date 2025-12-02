@@ -10,6 +10,7 @@ const nutritionFields = [
   ["carboidratos", "Carboidratos (g)"],
   ["gorduras_totais", "Gorduras Totais (g)"],
   ["gorduras_saturadas", "Gorduras Saturadas (g)"],
+  ["acucar_total", "Açúcares Totais (g)"],
   ["acucar_adicionado", "Açúcar Adicionado (g)"],
   ["sodio", "Sódio (mg)"],
   ["fibras", "Fibras (g)"],

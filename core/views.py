@@ -52,7 +52,7 @@ class ProdutoFilter(django_filters.FilterSet):
     max_carboidratos = django_filters.NumberFilter(field_name="carboidratos", lookup_expr="lte")
     max_gorduras = django_filters.NumberFilter(field_name="gorduras_totais", lookup_expr="lte")
     max_sodio = django_filters.NumberFilter(field_name="sodio", lookup_expr="lte")
-    max_acucar = django_filters.NumberFilter(field_name="acucar_adicionado", lookup_expr="lte")
+    max_acucar = django_filters.NumberFilter(field_name="acucar_total", lookup_expr="lte")
 
     # Bloqueios Booleanos
     bloquear_alto_acucar = django_filters.BooleanFilter(field_name="alto_teor_acucar", exclude=True)
@@ -110,7 +110,7 @@ class ProdutoFilter(django_filters.FilterSet):
         if not ids: return queryset
         # Assume que o campo no model Produto se chama 'avisos_contaminacao' ou similar
         # Ajuste o nome do campo abaixo se for diferente no seu model
-        return queryset.exclude(avisos__id__in=ids).distinct()
+        return queryset.exclude(avisos_contaminacao__id__in=ids).distinct()
 # ------------------ PRODUTOS ------------------
 
 
@@ -194,23 +194,23 @@ class ProdutoAdminViewSet(viewsets.ModelViewSet):
 
 
 class IngredienteViewSet(viewsets.ModelViewSet):
-    queryset = Ingrediente.objects.all()
+    queryset = Ingrediente.objects.all().order_by('nome')
     serializer_class = IngredienteSerializer
     permission_classes = [AllowAny]
 
 
 class AlergenicoViewSet(viewsets.ModelViewSet):
-    queryset = Alergenico.objects.all()
+    queryset = Alergenico.objects.all().order_by('nome')
     serializer_class = AlergenicoSerializer
     permission_classes = [AllowAny]
 
 
 class CategoriaViewSet(viewsets.ModelViewSet):
-    queryset = Categoria.objects.all()
+    queryset = Categoria.objects.all().order_by('nome')
     serializer_class = CategoriaSerializer
     permission_classes = [AllowAny]
 
 class AvisoContaminacaoViewSet(viewsets.ModelViewSet):
-    queryset = AvisoContaminacao.objects.all()
+    queryset = AvisoContaminacao.objects.all().order_by('nome')
     serializer_class = AvisoContaminacaoSerializer
     permission_classes = [AllowAny]

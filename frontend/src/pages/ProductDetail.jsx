@@ -122,6 +122,10 @@ function ProductDetail() {
                   <td>{produto.gorduras_saturadas} g</td>
                 </tr>
                 <tr>
+                  <td>Açúcares Totais</td>
+                  <td>{produto.acucar_total} g</td>
+                </tr>
+                <tr>
                   <td>Açúcar Adicionado</td>
                   <td>{produto.acucar_adicionado} g</td>
                 </tr>

@@ -4,22 +4,20 @@ import api from "../services/api";
 export default function FilterSidebar({ aoFiltrar }) {
   const [categorias, setCategorias] = useState([]);
   const [avisos, setAvisos] = useState([]);
-  const [ingredientes, setIngredientes] = useState([]); // <--- NOVO: Lista de ingredientes
+  const [ingredientes, setIngredientes] = useState([]);
 
   const [filtros, setFiltros] = useState({
     nome: "",
     categoria: "",
-    excluir_ingrediente: [], // <--- MUDANÇA: Agora é um array, não string
+    excluir_ingrediente: [],
     sem_gluten: false,
     sem_lactose: false,
     evitar_contaminacao: [],
-
     max_calorias: "",
     max_acucar: "",
     max_sodio: "",
     max_carboidratos: "",
     max_gorduras: "",
-
     bloquear_alto_acucar: false,
     bloquear_alto_sodio: false,
     bloquear_alto_gordura: false,
@@ -31,7 +29,6 @@ export default function FilterSidebar({ aoFiltrar }) {
   useEffect(() => {
     async function carregar() {
       try {
-        // Adicionamos a chamada para /ingredientes/
         const [catRes, avisosRes, ingRes] = await Promise.all([
           api.get("/categorias/"),
           api.get("/avisos/"),
@@ -39,10 +36,10 @@ export default function FilterSidebar({ aoFiltrar }) {
         ]);
         setCategorias(catRes.data);
         setAvisos(avisosRes.data);
-        setIngredientes(ingRes.data); // Salva os ingredientes
+        setIngredientes(ingRes.data);
       } catch (e) {
         console.error(e);
-        alert("Erro ao carregar listas de filtros.");
+        // alert("Erro ao carregar listas de filtros."); // Opcional
       }
     }
     carregar();
@@ -55,7 +52,6 @@ export default function FilterSidebar({ aoFiltrar }) {
     setFiltros((prev) => ({ ...prev, [campo]: valor }));
   };
 
-  // Função genérica para selects múltiplos (serve para avisos e ingredientes)
   const atualizarMultiplos = (e, campo) => {
     const selecionados = Array.from(e.target.selectedOptions).map(
       (opt) => opt.value
@@ -64,52 +60,52 @@ export default function FilterSidebar({ aoFiltrar }) {
   };
 
   // --------------------
-  // ENVIAR PARA O PAI
+  // ENVIAR PARA O PAI (Lógica pura)
   // --------------------
   const enviarFiltros = () => {
     const params = {};
 
-    // texto
     if (filtros.nome) params.nome = filtros.nome;
 
-    // Ingredientes a excluir (envia IDs separados por vírgula: "1,2,3")
     if (filtros.excluir_ingrediente.length > 0) {
       params.excluir_ingrediente = filtros.excluir_ingrediente.join(",");
     }
 
-    // categoria (id)
     if (filtros.categoria) params.categoria = filtros.categoria;
 
-    // checkboxes principais (Adaptado para os novos campos booleanos do Model)
     if (filtros.sem_gluten) params.sem_gluten = "true";
     if (filtros.sem_lactose) params.sem_lactose = "true";
 
-    // evitar contaminação cruzada (lista de IDs de avisos)
     if (filtros.evitar_contaminacao.length > 0) {
       params.evitar_contaminacao = filtros.evitar_contaminacao.join(",");
     }
 
-    // limites numéricos
     if (filtros.max_calorias) params.max_calorias = filtros.max_calorias;
     if (filtros.max_acucar) params.max_acucar = filtros.max_acucar;
     if (filtros.max_sodio) params.max_sodio = filtros.max_sodio;
-    if (filtros.max_carboidratos)
-      params.max_carboidratos = filtros.max_carboidratos;
+    if (filtros.max_carboidratos) params.max_carboidratos = filtros.max_carboidratos;
     if (filtros.max_gorduras) params.max_gorduras = filtros.max_gorduras;
 
-    // bloquear alto teor
-    if (filtros.bloquear_alto_acucar)
-      params.bloquear_alto_acucar = "true";
-    if (filtros.bloquear_alto_sodio)
-      params.bloquear_alto_sodio = "true";
-    if (filtros.bloquear_alto_gordura)
-      params.bloquear_alto_gordura = "true";
+    if (filtros.bloquear_alto_acucar) params.bloquear_alto_acucar = "true";
+    if (filtros.bloquear_alto_sodio) params.bloquear_alto_sodio = "true";
+    if (filtros.bloquear_alto_gordura) params.bloquear_alto_gordura = "true";
 
     aoFiltrar(params);
   };
 
+  // --------------------
+  // NOVO: HANDLER DO SUBMIT (Para o ENTER funcionar)
+  // --------------------
+  const handleFormSubmit = (e) => {
+    e.preventDefault(); // Impede o recarregamento da página
+    enviarFiltros();    // Chama a lógica de filtro
+  };
+
   return (
     <aside className="filter-sidebar">
+      {/* O onSubmit aqui chama a função handleFormSubmit criada acima */}
+      <form onSubmit={handleFormSubmit}>
+      
       {/* NOME */}
       <div className="filter-group">
         <label>Nome do Produto</label>
@@ -137,14 +133,14 @@ export default function FilterSidebar({ aoFiltrar }) {
         </select>
       </div>
 
-      {/* INGREDIENTE A EVITAR (AGORA É SELECT MULTIPLE) */}
+      {/* INGREDIENTE A EVITAR */}
       <div className="filter-group">
-        <label>Bloquear ingredientes:</label>
+        <label>Bloquear ingredientes (Segure Ctrl):</label>
         <select
           multiple
           value={filtros.excluir_ingrediente}
           onChange={(e) => atualizarMultiplos(e, "excluir_ingrediente")}
-          style={{ height: "100px" }} // Altura maior para facilitar visualização
+          style={{ height: "100px" }}
         >
           {ingredientes.map((ing) => (
             <option key={ing.id} value={ing.id}>
@@ -196,60 +192,50 @@ export default function FilterSidebar({ aoFiltrar }) {
       </div>
 
       {/* LIMITES POR PORÇÃO */}
-      
       <div className="filter-group">
-        <label>Quantidades máximas de macronutrientes por porção:</label>
-        <label>Máx kcal</label>
+        <label>Quantidades máximas por porção:</label>
+        
+        <label style={{ fontSize: "0.9em", marginTop: "5px", display: "block" }}>Máx kcal</label>
         <input
           type="number"
           value={filtros.max_calorias}
-          onChange={(e) =>
-            atualizarCampo("max_calorias", e.target.value)
-          }
+          onChange={(e) => atualizarCampo("max_calorias", e.target.value)}
         />
       </div>
 
       <div className="filter-group">
-        <label>Máx. açúcares totais (g)</label>
+        <label style={{ fontSize: "0.9em" }}>Máx. açúcares totais (g)</label>
         <input
           type="number"
           value={filtros.max_acucar}
-          onChange={(e) =>
-            atualizarCampo("max_acucar", e.target.value)
-          }
+          onChange={(e) => atualizarCampo("max_acucar", e.target.value)}
         />
       </div>
 
       <div className="filter-group">
-        <label>Máx. sódio (mg)</label>
+        <label style={{ fontSize: "0.9em" }}>Máx. sódio (mg)</label>
         <input
           type="number"
           value={filtros.max_sodio}
-          onChange={(e) =>
-            atualizarCampo("max_sodio", e.target.value)
-          }
+          onChange={(e) => atualizarCampo("max_sodio", e.target.value)}
         />
       </div>
 
       <div className="filter-group">
-        <label>Máx. carboidratos (g)</label>
+        <label style={{ fontSize: "0.9em" }}>Máx. carboidratos (g)</label>
         <input
           type="number"
           value={filtros.max_carboidratos}
-          onChange={(e) =>
-            atualizarCampo("max_carboidratos", e.target.value)
-          }
+          onChange={(e) => atualizarCampo("max_carboidratos", e.target.value)}
         />
       </div>
 
       <div className="filter-group">
-        <label>Máx. gorduras totais</label>
+        <label style={{ fontSize: "0.9em" }}>Máx. gorduras totais (g)</label>
         <input
           type="number"
           value={filtros.max_gorduras}
-          onChange={(e) =>
-            atualizarCampo("max_gorduras", e.target.value)
-          }
+          onChange={(e) => atualizarCampo("max_gorduras", e.target.value)}
         />
       </div>
 
@@ -289,9 +275,10 @@ export default function FilterSidebar({ aoFiltrar }) {
         </label>
       </div>
 
-      <button className="btn-primary" onClick={enviarFiltros}>
+      <button className="btn-primary" type="submit">
         Filtrar
       </button>
+      </form>
     </aside>
   );
 }

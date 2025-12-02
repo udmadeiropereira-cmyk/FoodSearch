@@ -49,6 +49,7 @@ class Migration(migrations.Migration):
                 ('gorduras_totais', models.FloatField(verbose_name='Gorduras Totais (g)')),
                 ('gorduras_saturadas', models.FloatField(verbose_name='Gorduras Saturadas (g)')),
                 ('acucar_adicionado', models.FloatField(default=0, verbose_name='Açúcar Adicionado (g)')),
+                ('acucar_total', models.FloatField(default=0, verbose_name='Açúcares totais (g)')),
                 ('sodio', models.FloatField(verbose_name='Sódio (mg)')),
                 ('fibras', models.FloatField(default=0, verbose_name='Fibras (g)')),
                 ('contaminacao_cruzada', models.TextField(blank=True, null=True)),

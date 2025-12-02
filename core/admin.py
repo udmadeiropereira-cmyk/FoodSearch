@@ -21,7 +21,7 @@ class ProdutoAdmin(admin.ModelAdmin):
         ("Tabela Nutricional", {
             "fields": (
                 "calorias", "proteinas", "carboidratos", "gorduras_totais",
-                "gorduras_saturadas", "acucar_adicionado", "sodio", "fibras"
+                "gorduras_saturadas", "acucar_total", "acucar_adicionado", "sodio", "fibras"
             )
         }),
         ("Avisos e Imagem", {

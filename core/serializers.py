@@ -61,7 +61,6 @@ class ProdutoSerializer(serializers.ModelSerializer):
         required=False,
     )
 
-    # 👇 AQUI: imagem explicitamente OPCIONAL
     imagem = serializers.ImageField(
         required=False,
         allow_null=True,
