@@ -48,6 +48,10 @@ export default function CadastroProduto() {
     ingredientes: [],
     alergenicos: [],
     avisos_contaminacao: [],
+    // --- NOVOS CAMPOS ADICIONADOS ---
+    sem_gluten: false,  
+    sem_lactose: false, 
+    // --------------------------------
     ...Object.fromEntries(nutritionFields.map(([f]) => [f, ""])),
     ...Object.fromEntries(flagFields.map(([f]) => [f, false])),
   });
@@ -94,6 +98,9 @@ export default function CadastroProduto() {
           ingredientes: p.ingredientes || [],
           alergenicos: p.alergenicos || [],
           avisos_contaminacao: p.avisos_contaminacao || [],
+          // Garante que booleanos venham certos da API
+          sem_gluten: p.sem_gluten || false, 
+          sem_lactose: p.sem_lactose || false,
         }));
       } catch (err) {
         console.error(err);
@@ -179,25 +186,34 @@ export default function CadastroProduto() {
 
     const data = new FormData();
 
+    // 1. Adiciona os campos de texto/número/booleanos
     Object.entries(formData).forEach(([k, v]) => {
-      if (!Array.isArray(v)) data.append(k, v);
+      // IGNORA 'imagem' aqui, pois ela pode conter a URL antiga (string) que quebra o backend
+      // IGNORA arrays (ingredientes, etc) pois são tratados abaixo
+      if (k !== 'imagem' && !Array.isArray(v)) {
+        data.append(k, v);
+      }
     });
 
+    // 2. Adiciona as listas (M2M)
     formData.ingredientes.forEach((v) => data.append("ingredientes", v));
     formData.alergenicos.forEach((v) => data.append("alergenicos", v));
     formData.avisos_contaminacao.forEach((v) =>
       data.append("avisos_contaminacao", v)
     );
 
-    // só manda arquivo se o usuário escolheu um novo
-    if (imagem) data.append("imagem", imagem);
+    // 3. LÓGICA DA IMAGEM CORRIGIDA:
+    // Só envia a chave 'imagem' se o usuário selecionou um arquivo NOVO.
+    // Se 'imagem' for null, não enviamos nada, e o PATCH do Django mantém a foto antiga.
+    if (imagem) {
+        data.append("imagem", imagem);
+    }
 
     const url = produtoId
       ? `admin/produtos/${produtoId}/`
       : "admin/produtos/";
 
     try {
-      // 👇 ALTERAÇÃO: PATCH para edição parcial
       const method = produtoId ? api.patch : api.post;
 
       await method(url, data, {
@@ -211,10 +227,13 @@ export default function CadastroProduto() {
       navigate("/");
     } catch (err) {
       console.error(err.response?.data || err);
-      alert("Erro ao salvar produto.");
+      // Dica: Mostra o erro específico se vier do backend (ajuda muito a debugar)
+      const errorMsg = err.response?.data 
+        ? JSON.stringify(err.response.data) 
+        : "Erro ao salvar produto.";
+      alert(errorMsg);
     }
   };
-
   // ============================================================
   // JSX – LAYOUT
   // ============================================================
@@ -353,6 +372,29 @@ export default function CadastroProduto() {
         {/* AVISOS & IMAGEM */}
         <div className="form-section">
           <h3>Avisos e Imagem</h3>
+
+          {/* --- NOVOS CAMPOS BOOLEXANOS DE GLÚTEN E LACTOSE --- */}
+          <div style={{ marginBottom: "15px", padding: "10px", backgroundColor: "#f8f9fa", borderRadius: "5px" }}>
+            <label className="checkbox-row" style={{ display: "block", marginBottom: "5px" }}>
+                <input
+                    type="checkbox"
+                    name="sem_gluten"
+                    checked={formData.sem_gluten}
+                    onChange={handleChange}
+                />
+                <strong>Produto Sem Glúten</strong>
+            </label>
+            <label className="checkbox-row" style={{ display: "block" }}>
+                <input
+                    type="checkbox"
+                    name="sem_lactose"
+                    checked={formData.sem_lactose}
+                    onChange={handleChange}
+                />
+                <strong>Produto Sem Lactose</strong>
+            </label>
+          </div>
+          {/* --------------------------------------------------- */}
 
           <label className="form-label">
             Avisos de Contaminação (Ctrl para múltiplos)

@@ -74,12 +74,17 @@ class Produto(models.Model):
     proteinas = models.FloatField(verbose_name="Proteínas (g)")
     carboidratos = models.FloatField(verbose_name="Carboidratos (g)")
     gorduras_totais = models.FloatField(verbose_name="Gorduras Totais (g)")
+    acucar_total =  models.FloatField(verbose_name = "Açúcares totais (g)", default=0)
     gorduras_saturadas = models.FloatField(verbose_name="Gorduras Saturadas (g)")
     acucar_adicionado = models.FloatField(
         verbose_name="Açúcar Adicionado (g)", default=0
     )
     sodio = models.FloatField(verbose_name="Sódio (mg)")
     fibras = models.FloatField(verbose_name="Fibras (g)", default=0)
+
+    # Sem glúten ou sem lactose
+    sem_gluten = models.BooleanField(default=False, verbose_name="Sem glúten")
+    sem_lactose = models.BooleanField(default=False, verbose_name="Sem lactose")
 
     # Avisos de alto teor
     alto_teor_sodio = models.BooleanField(default=False, verbose_name="Alto em sódio")
