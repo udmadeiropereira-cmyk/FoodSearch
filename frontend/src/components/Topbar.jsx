@@ -5,121 +5,69 @@ import { useCart } from "../context/CartContext.jsx";
 import AuthContext from "../context/AuthContext";
 import "../index.css";
 
-export default function Topbar({
-  searchTerm,
-  onSearchChange,
-  onCategoryChange,
-}) {
+export default function Topbar() {
   const { totalItems, clearCart } = useCart();
   const { user, logoutUser } = useContext(AuthContext);
 
-  // 🔴 Sair = limpar carrinho + deslogar (AuthContext já redireciona p/ /login)
-  const handleLogout = () => {
-    clearCart();     // limpa estado e localStorage do carrinho
-    logoutUser();    // limpa tokens e navega para /login
-  };
+  function handleLogout() {
+    clearCart();
+    logoutUser();
+  }
 
   return (
     <header className="topbar">
+      {/* LOGO */}
       <div className="topbar-left">
         <Link to="/" className="logo">
           FOOD <span>SEARCH</span>
         </Link>
       </div>
 
-      <div className="topbar-center">
-        {/* se quiser colocar barra de busca depois, entra aqui */}
-      </div>
+      {/* CENTRO — reservado para futuras buscas */}
+      <div className="topbar-center" />
 
+      {/* LADO DIREITO */}
       <div className="topbar-right">
-        {/* --- LÓGICA DE LOGIN / PERFIL --- */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "15px",
-            marginRight: "20px",
-            color: "white",
-          }}
-        >
+
+        {/* LOGIN / PERFIL */}
+        <div className="topbar-auth">
           {user ? (
             <>
-              {/* Histórico: só para cliente (não-admin) */}
+              {/* Histórico (cliente) */}
               {!user.is_staff && (
-                <Link
-                  to="/historico"
-                  style={{
-                    backgroundColor: "#ff4444",
-                    color: "white",
-                    padding: "4px 8px",
-                    borderRadius: "4px",
-                    textDecoration: "none",
-                    fontWeight: "bold",
-                    fontSize: "0.9rem",
-                  }}
-                >
-                  Historico
+                <Link to="/historico" className="topbar-btn-red">
+                  Histórico
                 </Link>
               )}
 
-              {/* Botão de Admin: só para staff */}
+              {/* Painel Admin */}
               {user.is_staff && (
-                <Link
-                  to="/admin/novo-produto"
-                  style={{
-                    backgroundColor: "#ff4444",
-                    color: "white",
-                    padding: "4px 8px",
-                    borderRadius: "4px",
-                    textDecoration: "none",
-                    fontWeight: "bold",
-                    fontSize: "0.9rem",
-                  }}
-                >
+                <Link to="/admin/novo-produto" className="topbar-btn-red">
                   + Novo Produto
                 </Link>
               )}
 
-              <span style={{ fontWeight: "bold" }}>Olá, {user.username}</span>
-              <button
-                onClick={handleLogout}
-                style={{
-                  background: "transparent",
-                  border: "1px solid white",
-                  color: "white",
-                  padding: "4px 10px",
-                  borderRadius: "4px",
-                  cursor: "pointer",
-                  fontSize: "0.9rem",
-                }}
-              >
+              <span className="topbar-username">
+                Olá, {user.username}
+              </span>
+
+              <button className="topbar-btn-outline" onClick={handleLogout}>
                 Sair
               </button>
             </>
           ) : (
             <>
-              <Link
-                to="/login"
-                style={{
-                  color: "white",
-                  textDecoration: "none",
-                  fontWeight: "bold",
-                }}
-              >
+              <Link to="/login" className="topbar-link">
                 Entrar
               </Link>
-              <Link
-                to="/register"
-                style={{ color: "white", textDecoration: "none" }}
-              >
+              <Link to="/register" className="topbar-link">
                 Cadastro
               </Link>
             </>
           )}
         </div>
-        {/* --- FIM LÓGICA LOGIN --- */}
 
-        {/* Carrinho: só aparece para cliente, não para admin */}
+        {/* CARRINHO (somente cliente) */}
         {!user?.is_staff && (
           <Link to="/carrinho" className="cart-button">
             🛒

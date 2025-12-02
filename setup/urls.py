@@ -16,33 +16,35 @@ from core.views import (
     CategoriaViewSet,
     IngredienteViewSet,
     AlergenicoViewSet,
+    AvisoContaminacaoViewSet,  # 👈 NOVO
 )
 
 # 🔥 Router principal da API
 router = DefaultRouter()
-router.register(r'produtos', ProdutoViewSet, basename='produto')
-router.register(r'pedidos', PedidoViewSet, basename='pedido')
+router.register(r"produtos", ProdutoViewSet, basename="produto")
+router.register(r"pedidos", PedidoViewSet, basename="pedido")
 
 # Rotas administrativas
-router.register(r'admin/produtos', ProdutoAdminViewSet, basename='admin-produtos')
+router.register(r"admin/produtos", ProdutoAdminViewSet, basename="admin-produtos")
 
 # Modelos auxiliares
-router.register(r'categorias', CategoriaViewSet, basename='categoria')
-router.register(r'ingredientes', IngredienteViewSet, basename='ingrediente')
-router.register(r'alergenicos', AlergenicoViewSet, basename='alergenico')
+router.register(r"categorias", CategoriaViewSet, basename="categoria")
+router.register(r"ingredientes", IngredienteViewSet, basename="ingrediente")
+router.register(r"alergenicos", AlergenicoViewSet, basename="alergenico")
+router.register(r"avisos", AvisoContaminacaoViewSet, basename="aviso")  # 👈 NOVA ROTA
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path("admin/", admin.site.urls),
 
     # 🌐 API principal
-    path('api/', include(router.urls)),
+    path("api/", include(router.urls)),
 
     # 🔑 Autenticação JWT
-    path('api/token/', MyTokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path("api/token/", MyTokenObtainPairView.as_view(), name="token_obtain_pair"),
+    path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
 
     # 👤 Registro de usuários
-    path('api/register/', RegisterView.as_view(), name='auth_register'),
+    path("api/register/", RegisterView.as_view(), name="auth_register"),
 ]
 
 # Arquivos de mídia

@@ -1,3 +1,4 @@
+# core/serializers.py
 from rest_framework import serializers
 from django.contrib.auth.models import User
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
@@ -9,6 +10,7 @@ from .models import (
     ItemPedido,
     Ingrediente,
     Alergenico,
+    AvisoContaminacao,
 )
 
 
@@ -30,10 +32,14 @@ class AlergenicoSerializer(serializers.ModelSerializer):
         fields = ["id", "nome"]
 
 
+class AvisoContaminacaoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AvisoContaminacao
+        fields = ["id", "nome"]
+
+
 class ProdutoSerializer(serializers.ModelSerializer):
-    # ------------------------------------------------------------------
-    # Escrita/leitura pelo NOME (slug_field) – é o que o frontend usa
-    # ------------------------------------------------------------------
+    # --- escrita/leitura por NOME (slug_field) ---
     categoria = serializers.SlugRelatedField(
         queryset=Categoria.objects.all(),
         slug_field="nome",
@@ -48,11 +54,21 @@ class ProdutoSerializer(serializers.ModelSerializer):
         slug_field="nome",
         many=True,
     )
+    avisos_contaminacao = serializers.SlugRelatedField(
+        queryset=AvisoContaminacao.objects.all(),
+        slug_field="nome",
+        many=True,
+        required=False,
+    )
 
-    # ------------------------------------------------------------------
-    # Campos extras SÓ de leitura, para conveniência do frontend
-    # (voltam no JSON, mas não são usados na escrita)
-    # ------------------------------------------------------------------
+    # 👇 AQUI: imagem explicitamente OPCIONAL
+    imagem = serializers.ImageField(
+        required=False,
+        allow_null=True,
+        use_url=True,
+    )
+
+    # --- campos extras só de leitura ---
     categoria_nome = serializers.CharField(
         source="categoria.nome", read_only=True
     )
@@ -61,7 +77,6 @@ class ProdutoSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Produto
-        # '__all__' inclui os campos do modelo + esses extras acima
         fields = "__all__"
 
     def get_ingredientes_nomes(self, obj):

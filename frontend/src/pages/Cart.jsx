@@ -6,7 +6,7 @@ import { useAuth } from "../context/AuthContext.jsx";
 
 export default function Cart() {
   const { cart, totalItems, totalPrice, removeFromCart, clearCart } = useCart();
-  const { user, accessToken } = useAuth();  // <-- corrigido!
+  const { user, accessToken } = useAuth();
 
   const [mensagem, setMensagem] = useState("");
   const [isCheckoutStep, setIsCheckoutStep] = useState(false);
@@ -18,7 +18,6 @@ export default function Cart() {
   const navigate = useNavigate();
 
   async function handleFinalizarCompra() {
-    // AGORA FUNCIONA: accessToken existe
     if (!user || !accessToken) {
       setMensagem("Você precisa estar logado para finalizar a compra.");
       return;
@@ -29,9 +28,9 @@ export default function Cart() {
       return;
     }
 
-    const itensPayload = cart.map((item) => ({
-      produto: item.id,
-      quantidade: item.quantidade || 1,
+    const itens = cart.map((i) => ({
+      produto: i.id,
+      quantidade: i.quantidade || 1,
     }));
 
     try {
@@ -39,10 +38,10 @@ export default function Cart() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`, // <-- corrigido!
+          Authorization: `Bearer ${accessToken}`,
         },
         body: JSON.stringify({
-          itens: itensPayload,
+          itens,
           endereco_entrega: endereco,
           forma_pagamento: formaPagamento,
           numero_cartao: numeroCartao,
@@ -50,108 +49,101 @@ export default function Cart() {
       });
 
       if (!resp.ok) {
-        console.error("Erro ao criar pedido:", resp.status);
-        setMensagem(
-          `Não foi possível finalizar a compra (erro ${resp.status}).`
-        );
+        setMensagem("Erro ao finalizar a compra.");
         return;
       }
-
-      const pedido = await resp.json();
-      console.log("Pedido criado:", pedido);
 
       setMensagem("Obrigado por comprar com a FoodSearch!");
       clearCart();
       setIsCheckoutStep(false);
 
-      setTimeout(() => {
-        setMensagem("");
-        navigate("/");
-      }, 5000);
-    } catch (err) {
-      console.error("Erro de rede ao criar pedido:", err);
+      setTimeout(() => navigate("/"), 5000);
+    } catch {
       setMensagem("Erro de comunicação com o servidor.");
     }
   }
 
-  const podeConfirmar =
-    formaPagamento.trim() !== "" &&
-    numeroCartao.trim() !== "" &&
-    endereco.trim() !== "";
-
-  if (!cart || cart.length === 0) {
-    return (
-      <div style={{ padding: "2rem" }}>
-        {mensagem ? <p>{mensagem}</p> : <p>Seu carrinho está vazio.</p>}
-      </div>
-    );
-  }
+  const carrinhoVazio = cart.length === 0;
 
   return (
     <div style={{ padding: "2rem" }}>
       <h1>Carrinho</h1>
 
-      <table className="cart-table">
-        <thead>
-          <tr>
-            <th>Produto</th>
-            <th>Qtd.</th>
-            <th>Preço</th>
-            <th>Total</th>
-            <th>Ações</th>
-          </tr>
-        </thead>
-        <tbody>
-          {cart.map((item) => (
-            <tr key={item.id}>
-              <td>{item.nome}</td>
-              <td>{item.quantidade}</td>
-              <td>R$ {Number(item.preco).toFixed(2).replace(".", ",")}</td>
-              <td>
-                R${" "}
-                {(Number(item.preco) * (item.quantidade || 0))
-                  .toFixed(2)
-                  .replace(".", ",")}
-              </td>
-              <td>
+      {/* Carrinho vazio → mostra só uma mensagem */}
+      {carrinhoVazio && (
+        <p style={{ marginTop: "1rem" }}>
+          {mensagem || "Seu carrinho está vazio."}
+        </p>
+      )}
+
+      {/* Tabela só quando houver itens */}
+      {!carrinhoVazio && (
+        <>
+          <table className="cart-table">
+            <thead>
+              <tr>
+                <th>Produto</th>
+                <th>Qtd.</th>
+                <th>Preço</th>
+                <th>Total</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {cart.map((item) => (
+                <tr key={item.id}>
+                  <td>{item.nome}</td>
+                  <td>{item.quantidade}</td>
+                  <td>R$ {Number(item.preco).toFixed(2).replace(".", ",")}</td>
+                  <td>
+                    R{"$ "}
+                    {(item.quantidade * Number(item.preco))
+                      .toFixed(2)
+                      .replace(".", ",")}
+                  </td>
+                  <td>
+                    <button
+                      className="danger-button"
+                      onClick={() => removeFromCart(item.id)}
+                    >
+                      Remover
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          <div className="cart-summary">
+            <div>
+              Itens: {totalItems} — Total: R{"$ "}
+              {totalPrice.toFixed(2).replace(".", ",")}
+            </div>
+
+            <div style={{ display: "flex", gap: "1rem", marginTop: "1rem" }}>
+              <button className="secondary-button" onClick={clearCart}>
+                Limpar carrinho
+              </button>
+
+              {!isCheckoutStep && (
                 <button
-                  className="danger-button"
-                  onClick={() => removeFromCart(item.id)}
+                  className="primary-button"
+                  onClick={() => {
+                    setMensagem("");
+                    setIsCheckoutStep(true);
+                  }}
                 >
-                  Remover
+                  Finalizar compra
                 </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+              )}
+            </div>
+          </div>
+        </>
+      )}
 
-      <div className="cart-summary">
-        <div>
-          Itens: {totalItems} – Total: R${" "}
-          {totalPrice.toFixed(2).replace(".", ",")}
-        </div>
-
-        <div style={{ marginTop: "1rem", display: "flex", gap: "1rem" }}>
-          <button className="secondary-button" onClick={clearCart}>
-            Limpar carrinho
-          </button>
-
-          {!isCheckoutStep && (
-            <button
-              className="primary-button"
-              onClick={() => {
-                setMensagem("");
-                setIsCheckoutStep(true);
-              }}
-            >
-              Finalizar compra
-            </button>
-          )}
-        </div>
-      </div>
-
-      {isCheckoutStep && (
+      {/* Etapa de checkout só se ainda houver itens */}
+      {isCheckoutStep && !carrinhoVazio && (
         <div
           style={{
             marginTop: "2rem",
@@ -211,27 +203,15 @@ export default function Cart() {
             className="primary-button"
             style={{ marginTop: "1.5rem" }}
             onClick={handleFinalizarCompra}
-            disabled={!podeConfirmar}
           >
             Confirmar compra
           </button>
-
-          {!podeConfirmar && (
-            <p
-              style={{
-                marginTop: "0.5rem",
-                fontSize: "0.9rem",
-                color: "#555",
-              }}
-            >
-              Preencha os três campos para confirmar a compra.
-            </p>
-          )}
         </div>
       )}
 
-      {mensagem && (
-        <p style={{ marginTop: "1.5rem", color: "#333" }}>{mensagem}</p>
+      {/* Mensagem extra só quando ainda há itens (erros de checkout, etc.) */}
+      {mensagem && !carrinhoVazio && (
+        <p style={{ marginTop: "1.5rem", fontWeight: "600" }}>{mensagem}</p>
       )}
     </div>
   );

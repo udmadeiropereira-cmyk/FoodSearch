@@ -9,7 +9,7 @@ const nutritionFields = [
   ["proteinas", "Proteínas (g)"],
   ["carboidratos", "Carboidratos (g)"],
   ["gorduras_totais", "Gorduras Totais (g)"],
-  ["gorduras_saturadas", "Gorduras Sat. (g)"],
+  ["gorduras_saturadas", "Gorduras Saturadas (g)"],
   ["acucar_adicionado", "Açúcar Adicionado (g)"],
   ["sodio", "Sódio (mg)"],
   ["fibras", "Fibras (g)"],
@@ -18,22 +18,24 @@ const nutritionFields = [
 const flagFields = [
   ["alto_teor_sodio", "Alto Teor de Sódio"],
   ["alto_teor_acucar", "Alto Teor de Açúcar"],
-  ["alto_teor_gordura_sat", "Alto Teor de Gordura Sat."],
+  ["alto_teor_gordura_sat", "Alto Teor de Gordura Saturada"],
 ];
 
-const CadastroProduto = () => {
+export default function CadastroProduto() {
   const { authTokens } = useContext(AuthContext);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const produtoId = searchParams.get("id"); // se tiver id => edição
+  const produtoId = searchParams.get("id");
 
-  const [categoriasList, setCategoriasList] = useState([]);
-  const [ingredientesList, setIngredientesList] = useState([]);
-  const [alergenicosList, setAlergenicosList] = useState([]);
+  const [categorias, setCategorias] = useState([]);
+  const [ingredientes, setIngredientes] = useState([]);
+  const [alergenicos, setAlergenicos] = useState([]);
+  const [avisos, setAvisos] = useState([]);
 
   const [novaCategoria, setNovaCategoria] = useState("");
   const [novoIngrediente, setNovoIngrediente] = useState("");
   const [novoAlergenico, setNovoAlergenico] = useState("");
+  const [novoAviso, setNovoAviso] = useState("");
 
   const [formData, setFormData] = useState({
     nome: "",
@@ -43,401 +45,444 @@ const CadastroProduto = () => {
     codigo_barras: "",
     porcao: "100",
     categoria: "",
-    calorias: "",
-    proteinas: "",
-    carboidratos: "",
-    gorduras_totais: "",
-    gorduras_saturadas: "",
-    acucar_adicionado: "0",
-    sodio: "",
-    fibras: "0",
-    contaminacao_cruzada: "",
-    alto_teor_sodio: false,
-    alto_teor_acucar: false,
-    alto_teor_gordura_sat: false,
     ingredientes: [],
     alergenicos: [],
+    avisos_contaminacao: [],
+    ...Object.fromEntries(nutritionFields.map(([f]) => [f, ""])),
+    ...Object.fromEntries(flagFields.map(([f]) => [f, false])),
   });
 
   const [imagem, setImagem] = useState(null);
 
-  const authHeader = authTokens?.access
-    ? { headers: { Authorization: `Bearer ${authTokens.access}` } }
-    : null;
-
-  // carregar listas + produto (se edição)
+  // ============================================================
+  // useEffect – carrega listas + produto para edição
+  // ============================================================
   useEffect(() => {
-    if (!authTokens?.access) {
-      navigate("/login");
-      return;
-    }
+    if (!authTokens?.access) return;
 
-    const fetchAuxiliares = async () => {
+    const header = {
+      headers: { Authorization: `Bearer ${authTokens.access}` },
+    };
+
+    const carregarListas = async () => {
       try {
-        const [catRes, ingRes, aleRes] = await Promise.all([
-          api.get("categorias/", authHeader),
-          api.get("ingredientes/", authHeader),
-          api.get("alergenicos/", authHeader),
+        const [c, i, a, v] = await Promise.all([
+          api.get("categorias/", header),
+          api.get("ingredientes/", header),
+          api.get("alergenicos/", header),
+          api.get("avisos/", header),
         ]);
-        setCategoriasList(catRes.data);
-        setIngredientesList(ingRes.data);
-        setAlergenicosList(aleRes.data);
-      } catch (error) {
-        console.error("Erro ao carregar listas auxiliares:", error);
+
+        setCategorias(c.data);
+        setIngredientes(i.data);
+        setAlergenicos(a.data);
+        setAvisos(v.data);
+      } catch (err) {
+        console.error(err);
+        alert("Erro ao carregar listas.");
       }
     };
 
-    const fetchProduto = async () => {
+    const carregarProduto = async () => {
       if (!produtoId) return;
+
       try {
-        const { data: p } = await api.get(`produtos/${produtoId}/`);
+        const { data: p } = await api.get(`produtos/${produtoId}/`, header);
         setFormData((prev) => ({
           ...prev,
-          nome: p.nome || "",
-          descricao: p.descricao || "",
-          preco: p.preco || "",
-          estoque: p.estoque || "",
-          codigo_barras: p.codigo_barras || "",
-          porcao: p.porcao || "100",
-          categoria: p.categoria || "",
-          calorias: p.calorias || "",
-          proteinas: p.proteinas || "",
-          carboidratos: p.carboidratos || "",
-          gorduras_totais: p.gorduras_totais || "",
-          gorduras_saturadas: p.gorduras_saturadas || "",
-          acucar_adicionado: p.acucar_adicionado ?? "0",
-          sodio: p.sodio || "",
-          fibras: p.fibras ?? "0",
-          contaminacao_cruzada: p.contaminacao_cruzada || "",
-          alto_teor_sodio: p.alto_teor_sodio || false,
-          alto_teor_acucar: p.alto_teor_acucar || false,
-          alto_teor_gordura_sat: p.alto_teor_gordura_sat || false,
-          ingredientes: Array.isArray(p.ingredientes) ? p.ingredientes : [],
-          alergenicos: Array.isArray(p.alergenicos) ? p.alergenicos : [],
+          ...p,
+          ingredientes: p.ingredientes || [],
+          alergenicos: p.alergenicos || [],
+          avisos_contaminacao: p.avisos_contaminacao || [],
         }));
-      } catch (error) {
-        console.error("Erro ao carregar produto para edição:", error);
+      } catch (err) {
+        console.error(err);
+        alert("Erro ao carregar produto.");
       }
     };
 
-    fetchAuxiliares();
-    fetchProduto();
-  }, [authTokens, produtoId, navigate]); // eslint-disable-line react-hooks/exhaustive-deps
+    carregarListas();
+    carregarProduto();
+  }, [authTokens, produtoId]);
 
-  // handlers genéricos
+  // ============================================================
+  // HANDLERS
+  // ============================================================
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: type === "checkbox" ? checked : value }));
+    setFormData((f) => ({ ...f, [name]: type === "checkbox" ? checked : value }));
+  };
+
+  const handleMulti = (e) => {
+    const selected = [...e.target.options]
+      .filter((o) => o.selected)
+      .map((o) => o.value);
+    setFormData((f) => ({ ...f, [e.target.name]: selected }));
   };
 
   const handleImageChange = (e) => {
-    if (e.target.files?.[0]) setImagem(e.target.files[0]);
+    if (e.target.files[0]) setImagem(e.target.files[0]);
   };
 
-  const handleMultiSelect = (e) => {
-    const { name, options } = e.target;
-    const selected = Array.from(options).filter((o) => o.selected).map((o) => o.value);
-    setFormData((prev) => ({ ...prev, [name]: selected }));
+  // cria registro via API e já seleciona no formulário
+  const createAndAttach = async (url, nome, setList, fieldKey) => {
+    const trimmed = nome.trim();
+    if (!trimmed || !authTokens?.access) return;
+
+    try {
+      const header = {
+        headers: { Authorization: `Bearer ${authTokens.access}` },
+      };
+      const { data } = await api.post(url, { nome: trimmed }, header);
+
+      setList((prev) => [...prev, data]);
+
+      setFormData((prev) => {
+        if (!fieldKey) {
+          // categoria (campo simples)
+          return { ...prev, categoria: data.nome };
+        }
+        const atual = prev[fieldKey] || [];
+        return { ...prev, [fieldKey]: [...atual, data.nome] };
+      });
+    } catch (err) {
+      console.error(err);
+      alert("Erro ao criar registro.");
+    }
   };
 
-  // criação rápida de categoria / ingrediente / alergênico
-  const makeCreator =
-    (url, stateSetter, field) =>
-    async (nomeRaw) => {
-      const nome = nomeRaw.trim();
-      if (!nome || !authHeader) return;
-      try {
-        const { data } = await api.post(url, { nome }, authHeader);
-        stateSetter((prev) => [...prev, data]);
-        setFormData((prev) =>
-          field
-            ? { ...prev, [field]: [...prev[field], data.nome] }
-            : { ...prev, categoria: data.nome }
-        );
-      } catch (err) {
-        console.error("Erro ao criar registro em", url, err);
-        alert("Não foi possível criar o registro.");
-      }
-    };
+  const handleAddCategoria = () => {
+    createAndAttach("categorias/", novaCategoria, setCategorias, null);
+    setNovaCategoria("");
+  };
 
-  const addCategoria = () => makeCreator("categorias/", setCategoriasList)(novaCategoria);
-  const addIngrediente = () =>
-    makeCreator("ingredientes/", setIngredientesList, "ingredientes")(novoIngrediente);
-  const addAlergenico = () =>
-    makeCreator("alergenicos/", setAlergenicosList, "alergenicos")(novoAlergenico);
+  const handleAddIngrediente = () => {
+    createAndAttach("ingredientes/", novoIngrediente, setIngredientes, "ingredientes");
+    setNovoIngrediente("");
+  };
 
-  // submit
+  const handleAddAlergenico = () => {
+    createAndAttach("alergenicos/", novoAlergenico, setAlergenicos, "alergenicos");
+    setNovoAlergenico("");
+  };
+
+  const handleAddAviso = () => {
+    createAndAttach("avisos/", novoAviso, setAvisos, "avisos_contaminacao");
+    setNovoAviso("");
+  };
+
+  // ============================================================
+  // SUBMIT
+  // ============================================================
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!authTokens?.access) {
-      alert("Sessão expirada. Faça login novamente.");
-      navigate("/login");
-      return;
-    }
+    const data = new FormData();
 
-    const dataToSend = new FormData();
-    Object.entries(formData).forEach(([key, value]) => {
-      if (key === "ingredientes" || key === "alergenicos") return;
-      dataToSend.append(key, value);
+    Object.entries(formData).forEach(([k, v]) => {
+      if (!Array.isArray(v)) data.append(k, v);
     });
 
-    formData.ingredientes.forEach((nome) => dataToSend.append("ingredientes", nome));
-    formData.alergenicos.forEach((nome) => dataToSend.append("alergenicos", nome));
-    if (imagem) dataToSend.append("imagem", imagem);
+    formData.ingredientes.forEach((v) => data.append("ingredientes", v));
+    formData.alergenicos.forEach((v) => data.append("alergenicos", v));
+    formData.avisos_contaminacao.forEach((v) =>
+      data.append("avisos_contaminacao", v)
+    );
 
-    const config = {
-      headers: {
-        "Content-Type": "multipart/form-data",
-        Authorization: `Bearer ${authTokens.access}`,
-      },
-    };
+    // só manda arquivo se o usuário escolheu um novo
+    if (imagem) data.append("imagem", imagem);
+
+    const url = produtoId
+      ? `admin/produtos/${produtoId}/`
+      : "admin/produtos/";
 
     try {
-      if (produtoId) {
-        await api.put(`admin/produtos/${produtoId}/`, dataToSend, config);
-        alert("Produto atualizado com sucesso!");
-      } else {
-        await api.post("admin/produtos/", dataToSend, config);
-        alert("Produto cadastrado com sucesso!");
-      }
+      // 👇 ALTERAÇÃO: PATCH para edição parcial
+      const method = produtoId ? api.patch : api.post;
+
+      await method(url, data, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${authTokens.access}`,
+        },
+      });
+
+      alert("Produto salvo!");
       navigate("/");
-    } catch (error) {
-      console.error("Erro ao salvar produto:", error.response?.data || error);
-      alert("Não foi possível salvar o produto. Veja o console.");
+    } catch (err) {
+      console.error(err.response?.data || err);
+      alert("Erro ao salvar produto.");
     }
   };
 
+  // ============================================================
+  // JSX – LAYOUT
+  // ============================================================
   return (
-    <div className="product-form-container">
-      <h2>{produtoId ? "Editar Produto" : "Cadastrar Produto"}</h2>
+    <div className="form-container">
+      <h2 className="form-title">
+        {produtoId ? "Editar Produto" : "Cadastrar Produto"}
+      </h2>
 
-      <form onSubmit={handleSubmit} className="product-form">
+      <form onSubmit={handleSubmit}>
         {/* DADOS BÁSICOS */}
-        <h3>Dados Básicos</h3>
+        <div className="form-section">
+          <h3>Dados Básicos</h3>
 
-        <label className="form-label">
-          Nome do Produto
-          <input
-            name="nome"
-            className="form-input"
-            value={formData.nome}
-            onChange={handleChange}
-            required
-          />
-        </label>
-
-        <label className="form-label">
-          Descrição
-          <textarea
-            name="descricao"
-            className="form-textarea"
-            value={formData.descricao}
-            onChange={handleChange}
-          />
-        </label>
-
-        <div className="form-row">
-          <label className="form-label">
-            Preço (R$)
-            <input
-              type="number"
-              name="preco"
-              step="0.01"
-              className="form-input"
-              value={formData.preco}
-              onChange={handleChange}
-              required
-            />
-          </label>
-
-          <label className="form-label">
-            Qtd Estoque
-            <input
-              type="number"
-              name="estoque"
-              className="form-input"
-              value={formData.estoque}
-              onChange={handleChange}
-              required
-            />
-          </label>
-        </div>
-
-        <label className="form-label">
-          Código de Barras (EAN)
-          <input
-            name="codigo_barras"
-            className="form-input"
-            value={formData.codigo_barras}
-            onChange={handleChange}
-            required
-          />
-        </label>
-
-        <label className="form-label">
-          Porção (g)
-          <input
-            type="number"
-            name="porcao"
-            step="0.01"
-            className="form-input"
-            value={formData.porcao}
-            onChange={handleChange}
-            required
-          />
-        </label>
-
-        {/* CATEGORIA */}
-        <h3>Categoria</h3>
-        <label className="form-label">
-          Categoria (Nome)
-          <select
-            name="categoria"
-            className="form-input"
-            value={formData.categoria}
-            onChange={handleChange}
-            required
-          >
-            <option value="">Selecione...</option>
-            {categoriasList.map((cat) => (
-              <option key={cat.id || cat.nome} value={cat.nome}>
-                {cat.nome}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        <div className="inline-add-row">
-          <input
-            type="text"
-            placeholder="Nova categoria"
-            className="form-input"
-            value={novaCategoria}
-            onChange={(e) => setNovaCategoria(e.target.value)}
-          />
-          <button type="button" className="small-button" onClick={addCategoria}>
-            + Adicionar
-          </button>
-        </div>
-
-        {/* TABELA NUTRICIONAL */}
-        <h3>Tabela Nutricional</h3>
-        <div className="form-row-grid">
-          {nutritionFields.map(([field, label]) => (
-            <label className="form-label" key={field}>
-              {label}
+          <div className="form-grid-2">
+            <label className="form-label">
+              Nome
               <input
-                type="number"
-                name={field}
-                step="0.01"
                 className="form-input"
-                value={formData[field]}
+                name="nome"
+                value={formData.nome}
                 onChange={handleChange}
                 required
               />
             </label>
-          ))}
-        </div>
 
-        {/* AVISOS */}
-        <h3>Avisos e Imagem</h3>
-        <label className="form-label">
-          Aviso de Contaminação Cruzada
-          <textarea
-            name="contaminacao_cruzada"
-            className="form-textarea"
-            value={formData.contaminacao_cruzada}
-            onChange={handleChange}
-          />
-        </label>
+            <label className="form-label">
+              Categoria
+              <select
+                className="form-select"
+                name="categoria"
+                value={formData.categoria}
+                onChange={handleChange}
+              >
+                <option value="">Selecione...</option>
+                {categorias.map((c) => (
+                  <option key={c.id} value={c.nome}>
+                    {c.nome}
+                  </option>
+                ))}
+              </select>
+            </label>
 
-        {flagFields.map(([field, label]) => (
-          <label className="checkbox-label" key={field}>
+            <label className="form-label">
+              Preço (R$)
+              <input
+                type="number"
+                className="form-input"
+                name="preco"
+                value={formData.preco}
+                onChange={handleChange}
+              />
+            </label>
+
+            <label className="form-label">
+              Estoque
+              <input
+                type="number"
+                className="form-input"
+                name="estoque"
+                value={formData.estoque}
+                onChange={handleChange}
+              />
+            </label>
+
+            <label className="form-label">
+              Código de Barras
+              <input
+                className="form-input"
+                name="codigo_barras"
+                value={formData.codigo_barras}
+                onChange={handleChange}
+              />
+            </label>
+
+            <label className="form-label">
+              Porção (g)
+              <input
+                type="number"
+                className="form-input"
+                name="porcao"
+                value={formData.porcao}
+                onChange={handleChange}
+              />
+            </label>
+          </div>
+
+          <div className="inline-add-row">
             <input
-              type="checkbox"
-              name={field}
-              checked={formData[field]}
+              type="text"
+              className="form-input"
+              placeholder="Nova categoria"
+              value={novaCategoria}
+              onChange={(e) => setNovaCategoria(e.target.value)}
+            />
+            <button
+              type="button"
+              className="primary-submit"
+              onClick={handleAddCategoria}
+            >
+              + Adicionar
+            </button>
+          </div>
+
+          <label className="form-label">
+            Descrição
+            <textarea
+              className="form-textarea"
+              name="descricao"
+              value={formData.descricao}
               onChange={handleChange}
             />
-            {label}
           </label>
-        ))}
-
-        <label className="form-label">
-          Imagem
-          <input type="file" accept="image/*" onChange={handleImageChange} />
-        </label>
-
-        {/* INGREDIENTES / ALERGÊNICOS */}
-        <h3>Ingredientes e Alergênicos</h3>
-
-        <label className="form-label">
-          Ingredientes (Ctrl para múltiplos)
-          <select
-            name="ingredientes"
-            multiple
-            className="form-multiselect"
-            value={formData.ingredientes}
-            onChange={handleMultiSelect}
-          >
-            {ingredientesList.map((ing) => (
-              <option key={ing.id || ing.nome} value={ing.nome}>
-                {ing.nome}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        <div className="inline-add-row">
-          <input
-            type="text"
-            placeholder="Novo ingrediente"
-            className="form-input"
-            value={novoIngrediente}
-            onChange={(e) => setNovoIngrediente(e.target.value)}
-          />
-          <button type="button" className="small-button" onClick={addIngrediente}>
-            + Adicionar
-          </button>
         </div>
 
-        <label className="form-label">
-          Alergênicos (Ctrl para múltiplos)
-          <select
-            name="alergenicos"
-            multiple
-            className="form-multiselect"
-            value={formData.alergenicos}
-            onChange={handleMultiSelect}
-          >
-            {alergenicosList.map((ale) => (
-              <option key={ale.id || ale.nome} value={ale.nome}>
-                {ale.nome}
-              </option>
-            ))}
-          </select>
-        </label>
+        {/* TABELA NUTRICIONAL */}
+        <div className="form-section">
+          <h3>Tabela Nutricional</h3>
 
-        <div className="inline-add-row">
-          <input
-            type="text"
-            placeholder="Novo alergênico"
-            className="form-input"
-            value={novoAlergenico}
-            onChange={(e) => setNovoAlergenico(e.target.value)}
-          />
-          <button type="button" className="small-button" onClick={addAlergenico}>
-            + Adicionar
-          </button>
+          <div className="form-grid-3">
+            {nutritionFields.map(([field, label]) => (
+              <label key={field} className="form-label">
+                {label}
+                <input
+                  type="number"
+                  className="form-input"
+                  name={field}
+                  value={formData[field]}
+                  onChange={handleChange}
+                />
+              </label>
+            ))}
+          </div>
         </div>
 
-        <button type="submit" className="primary-submit">
+        {/* AVISOS & IMAGEM */}
+        <div className="form-section">
+          <h3>Avisos e Imagem</h3>
+
+          <label className="form-label">
+            Avisos de Contaminação (Ctrl para múltiplos)
+            <select
+              className="form-multiselect"
+              multiple
+              name="avisos_contaminacao"
+              value={formData.avisos_contaminacao}
+              onChange={handleMulti}
+            >
+              {avisos.map((a) => (
+                <option key={a.id} value={a.nome}>
+                  {a.nome}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <div className="inline-add-row">
+            <input
+              type="text"
+              className="form-input"
+              placeholder="Novo aviso (ex: Sem glúten)"
+              value={novoAviso}
+              onChange={(e) => setNovoAviso(e.target.value)}
+            />
+            <button
+              type="button"
+              className="primary-submit"
+              onClick={handleAddAviso}
+            >
+              + Adicionar
+            </button>
+          </div>
+
+          {flagFields.map(([field, label]) => (
+            <label key={field} className="checkbox-row">
+              <input
+                type="checkbox"
+                name={field}
+                checked={formData[field]}
+                onChange={handleChange}
+              />
+              {label}
+            </label>
+          ))}
+
+          <label className="form-label">
+            Imagem
+            <input type="file" accept="image/*" onChange={handleImageChange} />
+          </label>
+        </div>
+
+        {/* INGREDIENTES & ALERGÊNICOS */}
+        <div className="form-section">
+          <h3>Ingredientes e Alergênicos</h3>
+
+          <label className="form-label">
+            Ingredientes (Ctrl múltiplos)
+            <select
+              name="ingredientes"
+              multiple
+              className="form-multiselect"
+              value={formData.ingredientes}
+              onChange={handleMulti}
+            >
+              {ingredientes.map((i) => (
+                <option key={i.id} value={i.nome}>
+                  {i.nome}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <div className="inline-add-row">
+            <input
+              type="text"
+              className="form-input"
+              placeholder="Novo ingrediente"
+              value={novoIngrediente}
+              onChange={(e) => setNovoIngrediente(e.target.value)}
+            />
+            <button
+              type="button"
+              className="primary-submit"
+              onClick={handleAddIngrediente}
+            >
+              + Adicionar
+            </button>
+          </div>
+
+          <label className="form-label">
+            Alergênicos (Ctrl múltiplos)
+            <select
+              name="alergenicos"
+              multiple
+              className="form-multiselect"
+              value={formData.alergenicos}
+              onChange={handleMulti}
+            >
+              {alergenicos.map((a) => (
+                <option key={a.id} value={a.nome}>
+                  {a.nome}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <div className="inline-add-row">
+            <input
+              type="text"
+              className="form-input"
+              placeholder="Novo alergênico"
+              value={novoAlergenico}
+              onChange={(e) => setNovoAlergenico(e.target.value)}
+            />
+            <button
+              type="button"
+              className="primary-submit"
+              onClick={handleAddAlergenico}
+            >
+              + Adicionar
+            </button>
+          </div>
+        </div>
+
+        <button className="primary-submit" type="submit">
           {produtoId ? "Salvar alterações" : "Cadastrar"}
         </button>
       </form>
     </div>
   );
-};
-
-export default CadastroProduto;
+}
