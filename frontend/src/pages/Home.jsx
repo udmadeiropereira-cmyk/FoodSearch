@@ -37,7 +37,7 @@ export default function Home() {
       return "https://via.placeholder.com/300x200?text=Sem+imagem";
     }
     if (produto.imagem.startsWith("http")) return produto.imagem;
-    return `http://127.0.0.1:8000${produto.imagem}`;
+    return `https://foodsearch-api.onrender.com${produto.imagem}`;
   }
 
   return (

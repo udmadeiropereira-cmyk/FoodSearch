@@ -34,7 +34,7 @@ export default function Cart() {
     }));
 
     try {
-      const resp = await fetch("http://127.0.0.1:8000/api/pedidos/", {
+      const resp = await fetch("https://foodsearch-api.onrender.com/api/pedidos", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

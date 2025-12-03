@@ -5,7 +5,7 @@ import { useCart } from "../context/CartContext.jsx";
 import { useAuth } from "../context/AuthContext.jsx";
 import "../index.css";
 
-const API_URL = "http://127.0.0.1:8000/api/produtos/";
+const API_URL = "https://foodsearch-api.onrender.com/api/produtos/";
 
 function ProductDetail() {
   const { id } = useParams();
@@ -45,7 +45,7 @@ function ProductDetail() {
       return "https://via.placeholder.com/400x400?text=Sem+imagem";
     }
     if (p.imagem.startsWith("http")) return p.imagem;
-    return `http://127.0.0.1:8000${p.imagem}`;
+    return `https://foodsearch-api.onrender.com${p.imagem}`;
   }
 
   function handleAddToCart() {

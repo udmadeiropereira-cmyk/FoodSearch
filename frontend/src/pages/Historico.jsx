@@ -19,7 +19,7 @@ export default function Historico() {
       try {
         console.log("➡️ Fazendo requisição com token:", authTokens.access);
 
-        const resp = await fetch("http://127.0.0.1:8000/api/pedidos/", {
+        const resp = await fetch("https://foodsearch-api.onrender.com/api/pedidos/", {
           headers: {
             Authorization: `Bearer ${authTokens.access}`,
           },
