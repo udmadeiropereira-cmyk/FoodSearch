@@ -1,6 +1,6 @@
 # core/admin.py
 from django.contrib import admin
-from .models import Categoria, Ingrediente, Alergenico, Produto
+from .models import Categoria, Ingrediente, Alergenico, Produto, AvisoContaminacao
 
 class ProdutoAdmin(admin.ModelAdmin):
     list_display = ('nome', 'categoria', 'preco', 'estoque')
@@ -33,3 +33,4 @@ admin.site.register(Categoria)
 admin.site.register(Ingrediente)
 admin.site.register(Alergenico)
 admin.site.register(Produto, ProdutoAdmin)
+admin.site.register(AvisoContaminacao)
