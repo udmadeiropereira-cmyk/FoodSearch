@@ -117,7 +117,7 @@ class ProdutoFilter(django_filters.FilterSet):
 class ProdutoViewSet(viewsets.ModelViewSet):
     queryset = Produto.objects.all()
     serializer_class = ProdutoSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = [AllowAny]
 
     filter_backends = [
         DjangoFilterBackend,
