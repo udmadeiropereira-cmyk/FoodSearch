@@ -25,7 +25,7 @@ class ProdutoAdmin(admin.ModelAdmin):
             )
         }),
         ("Avisos e Imagem", {
-            "fields": ("alto_teor_sodio", "alto_teor_acucar", "alto_teor_gordura_sat", "imagem")
+            "fields": ("alto_teor_sodio", "alto_teor_acucar", "alto_teor_gordura_sat", "sem_gluten", "sem_lactose", "imagem")
         }),
     )
 
