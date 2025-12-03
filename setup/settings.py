@@ -18,7 +18,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-v3sxo7i@*nusg5ue!5-o-6#qq#&444e^b_=a8$a)n2#hplhh!*')
 
 # DEBUG: Será False no Render, mas True no seu computador
-DEBUG = 'RENDER' not in os.environ
+DEBUG = True
+# DEBUG = 'RENDER' not in os.environ
 
 # HOSTS: Aceita o endereço do Render automaticamente
 ALLOWED_HOSTS = []
